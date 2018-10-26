@@ -1,4 +1,4 @@
-import { Action } from "./Action";
+import { Action } from "./actions/Action";
 import { Color } from "./Color";
 import { Controller } from "./Controller";
 import { Entity } from "./Entity";

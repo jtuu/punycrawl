@@ -35,3 +35,5 @@ export function swap(arr: Array<any>, i: number, j: number) {
     arr[i] = arr[j];
     arr[j] = temp;
 }
+
+export function unused(..._args: any[]) {}

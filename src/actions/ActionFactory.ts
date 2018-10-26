@@ -1,0 +1,24 @@
+import { AttackAction } from "./AttackAction";
+import { ClimbStairsAction } from "./ClimbStairsAction";
+import { MoveAction } from "./MoveAction";
+import { RestAction } from "./RestAction";
+
+export class ActionFactory {
+    private static restAction_: RestAction = new RestAction();
+
+    public static createMoveAction(dx: number, dy: number): MoveAction {
+        return new MoveAction(dx, dy);
+    }
+
+    public static createAttackAction(dx: number, dy: number): AttackAction {
+        return new AttackAction(dx, dy);
+    }
+
+    public static createRestAction(): RestAction {
+        return ActionFactory.restAction_;
+    }
+
+    public static createClimbStairsAction(): ClimbStairsAction {
+        return new ClimbStairsAction();
+    }
+}

@@ -1,4 +1,5 @@
-import { Action } from "./Action";
+import { Action } from "./actions/Action";
+import { ActionFactory } from "./actions/ActionFactory";
 import { Actor } from "./Actor";
 import { Controller } from "./Controller";
 import { Game } from "./Game";
@@ -13,17 +14,16 @@ export class KeyboardController extends Controller {
         actor: Actor
     ) {
         super(game, actor);
-        const actionFactory = this.actionFactory;
         this.controls = new StrictMap([
-            ["Numpad1", actionFactory.createMoveAction(-1, +1)],
-            ["Numpad2", actionFactory.createMoveAction( 0, +1)],
-            ["Numpad3", actionFactory.createMoveAction(+1, +1)],
-            ["Numpad4", actionFactory.createMoveAction(-1,  0)],
-            ["Numpad5", actionFactory.createRestAction()],
-            ["Numpad6", actionFactory.createMoveAction(+1,  0)],
-            ["Numpad7", actionFactory.createMoveAction(-1, -1)],
-            ["Numpad8", actionFactory.createMoveAction( 0, -1)],
-            ["Numpad9", actionFactory.createMoveAction(+1, -1)],
+            ["Numpad1", ActionFactory.createMoveAction(-1, +1)],
+            ["Numpad2", ActionFactory.createMoveAction( 0, +1)],
+            ["Numpad3", ActionFactory.createMoveAction(+1, +1)],
+            ["Numpad4", ActionFactory.createMoveAction(-1,  0)],
+            ["Numpad5", ActionFactory.createRestAction()],
+            ["Numpad6", ActionFactory.createMoveAction(+1,  0)],
+            ["Numpad7", ActionFactory.createMoveAction(-1, -1)],
+            ["Numpad8", ActionFactory.createMoveAction( 0, -1)],
+            ["Numpad9", ActionFactory.createMoveAction(+1, -1)],
         ] as Array<[string, Action]>);
     }
 

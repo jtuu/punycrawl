@@ -1,4 +1,4 @@
-import { ActionType } from "./Action";
+import { ActionType } from "./actions/Action";
 import { Actor } from "./Actor";
 import { DungeonLevel } from "./DungeonLevel";
 import { Id, sortById } from "./Id";
