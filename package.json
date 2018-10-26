@@ -4,7 +4,11 @@
   "description": "",
   "main": "",
   "scripts": {
-    "build": "node_modules/typescript/bin/tsc --build src/tsconfig.json || true"
+    "clean": "rm build/*.js || true",
+    "tsc": "node_modules/typescript/bin/tsc",
+    "fix_module_names": "find build -name '*.js' -exec sed -i '/import/s/\";/.js\";/' {} \\;",
+    "build": "npm run tsc -- --build src/tsconfig.json && npm run fix_module_names || true",
+    "server": "pushd build; python3 -m http.server; popd"
   },
   "author": "",
   "license": "MIT",

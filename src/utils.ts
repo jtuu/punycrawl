@@ -20,7 +20,7 @@ export function assertNotNull<T>(thing: T | null): T {
     throw new Error("Assert failed: is null");
 }
 
-export function filterType<T extends Function>(array: Array<any>, t: T): Array<T> {
+export function filterInstanceOf<T extends Function>(array: Array<any>, t: T): Array<T["prototype"]> {
     const result: Array<T> = [];
     for (const item of array) {
         if (item instanceof t) {

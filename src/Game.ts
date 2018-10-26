@@ -1,11 +1,71 @@
 import { ActionType } from "./Action";
 import { Actor } from "./Actor";
-import { CircularArray } from "./CircularArray";
 import { DungeonLevel } from "./DungeonLevel";
 import { Id, sortById } from "./Id";
-import { assertDefined, filterType, isDefined, isNotNull } from "./utils";
+import { assertDefined, assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
 const TilePixelSize = 20;
+
+type ActorDispenserResult = Actor | null;
+class ActorDispenser implements IterableIterator<ActorDispenserResult> {
+    private readonly actors: Array<Actor> = [];
+    private cursor: number = 0;
+    private lastId: Id | null = null;
+
+    public clear() {
+        this.actors.length = 0;
+    }
+
+    public add(actors: Array<Actor>) {
+        Array.prototype.push.apply(this.actors, actors);
+    }
+
+    public rewind() {
+        this.cursor = 0;
+    }
+
+    public sync() {
+        sortById(this.actors);
+        const lastId = this.lastId;
+        if (isNotNull(lastId) && this.actors.length > 0) {
+            const smallest = this.actors[0];
+            const biggest = this.actors[this.actors.length - 1];
+            if (lastId <= smallest.id || lastId >= biggest.id) {
+                this.rewind();
+            } else {
+                for (let i = 1; i < this.actors.length; i++) {
+                    if (this.actors[i].id > lastId) {
+                        this.cursor = i;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public next(): IteratorResult<ActorDispenserResult> {
+        const actor = this.actors[this.cursor];
+        if (++this.cursor >= this.actors.length) {
+            this.rewind();
+        }
+        if (isDefined(actor)) {
+            this.lastId = actor.id;
+            return {
+                value: actor,
+                done: false
+            };
+        } else {
+            return {
+                value: null,
+                done: true
+            };
+        }
+    }
+
+    public [Symbol.iterator](): IterableIterator<ActorDispenserResult> {
+        return this;
+    }
+}
 
 export class Game {
     private static readonly defaultFloorWidth: number = 100;
@@ -14,9 +74,7 @@ export class Game {
     private ctx: CanvasRenderingContext2D;
     private readonly levels: Array<DungeonLevel> = [];
     private currentLevelIdx: number = -1;
-    private readonly actors: CircularArray<Actor> = new CircularArray();
-    private readonly actorIter: IterableIterator<Actor> = this.actors.values();
-    private lastActorId: Id | null = null;
+    private readonly actors: ActorDispenser = new ActorDispenser();
     
     constructor() {
         const ctx = this.canvas.getContext("2d");
@@ -33,6 +91,16 @@ export class Game {
         this.syncActors();
     }
 
+    private get previousLevel(): DungeonLevel | null {
+        const level = this.levels[this.currentLevelIdx - 1];
+        return isDefined(level) ? level : null;
+    }
+
+    private get nextLevel(): DungeonLevel | null {
+        const level = this.levels[this.currentLevelIdx + 1];
+        return isDefined(level) ? level : null;
+    }
+
     private get currentLevel(): DungeonLevel {
         return assertDefined(this.levels[this.currentLevelIdx]);
     }
@@ -44,29 +112,16 @@ export class Game {
 
     private syncActors() {
         this.actors.clear();
-        const prevLevel = this.levels[this.currentLevelIdx - 1];
-        const nextLevel = this.levels[this.currentLevelIdx + 1];
-        if (isDefined(prevLevel)) {
-            Array.prototype.push.apply(this.actors, filterType(prevLevel.entities, Actor));
+        const prev = this.previousLevel;
+        const next = this.nextLevel;
+        if (isNotNull(prev)) {
+            this.actors.add(filterInstanceOf(prev.entities, Actor));
         }
-        if (isDefined(nextLevel)) {
-            Array.prototype.push.apply(this.actors, filterType(nextLevel.entities, Actor));
+        if (isNotNull(next)) {
+            this.actors.add(filterInstanceOf(next.entities, Actor));
         }
-        Array.prototype.push.apply(this.actors, filterType(this.currentLevel.entities, Actor));
-        sortById(this.actors);
-
-        const lastActorId = this.lastActorId;
-        if (isNotNull(lastActorId)) {
-            let prev = this.actorIter.next();
-            let cur: IteratorResult<Actor>;
-            while (!(cur = this.actorIter.next()).done) {
-                if (cur.value.id <= lastActorId && prev.value.id >= lastActorId) {
-                    this.actorIter.next();
-                    break;
-                }
-                prev = cur;
-            }
-        }
+        this.actors.add(filterInstanceOf(this.currentLevel.entities, Actor));
+        this.actors.sync();
     }
     
     private draw(ctx: CanvasRenderingContext2D) {
@@ -87,7 +142,8 @@ export class Game {
     }
 
     public async run() {
-        for (const actor of this.actorIter) {
+        for (const actor_ of this.actors) {
+            const actor = assertNotNull(actor_);
             const action = await actor.controller.getAction();
             action.execute(this, actor);
             switch (action.type) {
@@ -96,7 +152,6 @@ export class Game {
                     break;
             }
             this.draw(this.ctx);
-            this.lastActorId = actor.id;
         }
     }
 }
