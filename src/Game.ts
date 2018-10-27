@@ -1,6 +1,7 @@
-import { ActionType } from "./actions/Action";
+import { ActionKind } from "./actions/Action";
 import { Actor } from "./Actor";
 import { DungeonLevel } from "./DungeonLevel";
+import { Human } from "./Human";
 import { Id, sortById } from "./Id";
 import { assertDefined, assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
@@ -68,8 +69,8 @@ class ActorDispenser implements IterableIterator<ActorDispenserResult> {
 }
 
 export class Game {
-    private static readonly defaultFloorWidth: number = 100;
-    private static readonly defaultFloorHeight: number = 100;
+    private static readonly defaultFloorWidth: number = 40;
+    private static readonly defaultFloorHeight: number = 25;
     private readonly canvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
     private ctx: CanvasRenderingContext2D;
     private readonly levels: Array<DungeonLevel> = [];
@@ -82,7 +83,10 @@ export class Game {
             throw new Error("Failed to get CanvasRenderingContext2D");
         }
         this.ctx = ctx;
+        this.canvas.width = TilePixelSize * Game.defaultFloorWidth;
+        this.canvas.height = TilePixelSize * Game.defaultFloorHeight;
         this.changeLevel(this.addFloor());
+        this.currentLevel.putEntity(new Human(this), 1, 1);
     }
 
     private changeLevel(levelIdx: number) {
@@ -134,24 +138,27 @@ export class Game {
 
                 const entities = level.entitiesAt(x, y);
                 for (const entity of entities) {
+                    ctx.font = `${TilePixelSize}px sans-serif`;
+                    ctx.textBaseline = "middle";
                     ctx.fillStyle = entity.color;
-                    ctx.fillText(entity.glyph[0], xpx, ypx);
+                    ctx.fillText(entity.glyph[0], xpx, ypx + TilePixelSize / 2);
                 }
             }
         }
     }
 
     public async run() {
+        this.syncActors();
         for (const actor_ of this.actors) {
+            this.draw(this.ctx);
             const actor = assertNotNull(actor_);
             const action = await actor.controller.getAction();
             action.execute(this, actor);
-            switch (action.type) {
-                case ActionType.ClimbStairs:
+            switch (action.kind) {
+                case ActionKind.ClimbStairs:
                     this.syncActors();
                     break;
             }
-            this.draw(this.ctx);
         }
     }
 }

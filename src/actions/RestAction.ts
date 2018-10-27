@@ -1,11 +1,14 @@
 import { Actor } from "../Actor";
 import { Game } from "../Game";
-import { Action, ActionType } from "./Action";
+import { ActionKind, IAction } from "./Action";
 
-export class RestAction implements Action {
-    public readonly type: ActionType = ActionType.Rest;
-
-    public execute(game: Game, actor: Actor) {
-        
-    }
+export interface RestAction extends IAction {
+    kind: ActionKind.Rest;
 }
+
+export const RestAction: RestAction = {
+    kind: ActionKind.Rest,
+    execute(_game: Game, _actor: Actor) {
+
+    }
+};

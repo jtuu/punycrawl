@@ -13,6 +13,14 @@ export class DungeonLevel {
         public readonly height: number
     ) {
         this.terrainMap = new Array(width * height).fill(Terrain.Floor);
+        for (let x = 0; x < width; x++) {
+            this.terrainMap[this.index(x, 0)] = Terrain.Wall;
+            this.terrainMap[this.index(x, height - 1)] = Terrain.Wall;
+        }
+        for (let y = 0; y < height; y++) {
+            this.terrainMap[this.index(0, y)] = Terrain.Wall;
+            this.terrainMap[this.index(this.width - 1, y)] = Terrain.Wall;
+        }
         this.entityMap = new Array(width * height);
     }
 

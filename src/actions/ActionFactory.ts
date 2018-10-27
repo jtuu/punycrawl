@@ -4,8 +4,6 @@ import { MoveAction } from "./MoveAction";
 import { RestAction } from "./RestAction";
 
 export class ActionFactory {
-    private static restAction_: RestAction = new RestAction();
-
     public static createMoveAction(dx: number, dy: number): MoveAction {
         return new MoveAction(dx, dy);
     }
@@ -15,10 +13,10 @@ export class ActionFactory {
     }
 
     public static createRestAction(): RestAction {
-        return ActionFactory.restAction_;
+        return RestAction;
     }
 
     public static createClimbStairsAction(): ClimbStairsAction {
-        return new ClimbStairsAction();
+        return ClimbStairsAction;
     }
 }

@@ -1,5 +1,6 @@
 import { Color } from "./Color";
 import { DungeonLevel } from "./DungeonLevel";
+import { Game } from "./Game";
 import { Id } from "./Id";
 
 export class Entity {
@@ -8,11 +9,23 @@ export class Entity {
     public dungeonLevel: DungeonLevel | null = null;
     public x: number | null = null;
     public y: number | null = null;
+    private health: number;
     
     constructor(
+        public game: Game,
         public glyph: string,
-        public color: Color
+        public color: Color,
+        public readonly maxHealth: number
     ) {
         this.id = Entity.idCounter++;
+        this.health = maxHealth;
+    }
+
+    public takeDamage(dmg: number) {
+        this.health -= Math.abs(dmg);
+    }
+
+    public get alive(): boolean {
+        return this.health > 0;
     }
 }

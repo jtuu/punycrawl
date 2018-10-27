@@ -1,16 +1,19 @@
-import { Action } from "./actions/Action";
 import { Color } from "./Color";
-import { Controller } from "./Controller";
+import { Controller, IController } from "./Controller";
 import { Entity } from "./Entity";
+import { Game } from "./Game";
 
 export abstract class Actor extends Entity {
+    public readonly controller: IController;
+
     constructor(
+        game: Game,
         glyph: string,
         color: Color,
-        public readonly controller: Controller
+        maxHealth: number,
+        controllerCtor: new (...args: ConstructorParameters<Controller>) => IController
     ) {
-        super(glyph, color);
+        super(game, glyph, color, maxHealth);
+        this.controller = new controllerCtor(game, this);
     }
-
-    public abstract async act(): Promise<Action>;
 }
