@@ -35,7 +35,6 @@
         "await-promise": true,
         "callable-types": true,
         "deprecation": true,
-        "interface-over-type-literal": true,
         "unified-signatures": true,
         "quotemark": [true, "double", "jsx-double", "avoid-template", "avoid-escape"],
         "prefer-function-over-method": true,

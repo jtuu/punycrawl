@@ -1,4 +1,4 @@
-import { isNotNull } from "./utils";
+import { isNotNull, swap } from "./utils";
 
 export type Id = number;
 
@@ -33,4 +33,31 @@ export function removeById<T extends HasId>(haystack: Array<T>, needle: Id): boo
     } else {
         return false;
     }
+}
+
+function partitionById<T extends HasId>(arr: Array<T>, lo: number, hi: number): number {
+    const pivot = arr[hi];
+    let i = lo;
+    for (let j = lo; j < hi; j++) {
+        if (arr[j].id < pivot.id) {
+            if (i !== j) {
+                swap(arr, i, j);
+            }
+            i++;
+        }
+    }
+    swap(arr, i, hi);
+    return i;
+}
+
+function quicksortById<T extends HasId>(arr: Array<T>, lo: number = 0, hi: number = arr.length - 1) {
+    if (lo < hi) {
+        const part = partitionById(arr, lo, hi);
+        quicksortById(arr, lo, part - 1);
+        quicksortById(arr, part + 1, hi);
+    }
+}
+
+export function sortById<T extends HasId>(arr: Array<T>) {
+    quicksortById(arr);
 }
