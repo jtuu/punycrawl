@@ -10,6 +10,7 @@ export function assertDefined<T>(thing: T | undefined): T {
     if (isDefined(thing)) {
         return thing;
     }
+    console.trace();
     throw new Error("Assert failed: not defined");
 }
 
@@ -17,6 +18,7 @@ export function assertNotNull<T>(thing: T | null): T {
     if (isNotNull(thing)) {
         return thing;
     }
+    console.trace();
     throw new Error("Assert failed: is null");
 }
 

@@ -94,4 +94,8 @@ export class DungeonLevel {
     public terrainAt(x: number, y: number): Terrain {
         return assertDefined(this.terrainMap[this.index(x, y)]);
     }
+
+    public withinBounds(x: number, y: number): boolean {
+        return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    }
 }

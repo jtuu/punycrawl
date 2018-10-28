@@ -6,6 +6,8 @@ import { Id, sortById } from "./Id";
 import { assertDefined, assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
 const TilePixelSize = 20;
+const ViewWidth = 41; // in tiles
+const ViewHeight = 25;
 
 type ActorDispenserResult = Actor | null;
 class ActorDispenser implements IterableIterator<ActorDispenserResult> {
@@ -76,6 +78,9 @@ export class Game {
     private readonly levels: Array<DungeonLevel> = [];
     private currentLevelIdx: number = -1;
     private readonly actors: ActorDispenser = new ActorDispenser();
+    private cameraX: number = 0;
+    private cameraY: number = 0;
+    private trackedActor: Actor | null;
     
     constructor() {
         const ctx = this.canvas.getContext("2d");
@@ -86,7 +91,17 @@ export class Game {
         this.canvas.width = TilePixelSize * Game.defaultFloorWidth;
         this.canvas.height = TilePixelSize * Game.defaultFloorHeight;
         this.changeLevel(this.addFloor());
-        this.currentLevel.putEntity(new Human(this), 1, 1);
+        const player = new Human(this);
+        this.currentLevel.putEntity(player, 1, 1);
+        this.trackedActor = player;
+        this.updateCamera();
+    }
+
+    private updateCamera() {
+        if (isNotNull(this.trackedActor)) {
+            this.cameraX = assertNotNull(this.trackedActor.x);
+            this.cameraY = assertNotNull(this.trackedActor.y);
+        }
     }
 
     private changeLevel(levelIdx: number) {
@@ -129,19 +144,28 @@ export class Game {
     }
     
     private draw(ctx: CanvasRenderingContext2D) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const halfViewW = Math.floor(ViewWidth / 2);
+        const halfViewH = Math.floor(ViewHeight / 2);
+        const startX = this.cameraX - halfViewW;
+        const endX = this.cameraX + halfViewW;
+        const startY = this.cameraY - halfViewH;
+        const endY = this.cameraY + halfViewH;
         const level = this.currentLevel;
-        for (let x = 0, xpx = 0; x < this.currentLevel.width; x++, xpx += TilePixelSize) {
-            for (let y = 0, ypx = 0; y < this.currentLevel.height; y++, ypx += TilePixelSize) {
-                const terrain = level.terrainAt(x, y);
-                ctx.fillStyle = terrain.color;
-                ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
+        for (let x = startX, xpx = 0; x < endX; x++, xpx += TilePixelSize) {
+            for (let y = startY, ypx = 0; y < endY; y++, ypx += TilePixelSize) {
+                if (level.withinBounds(x, y)) {
+                    const terrain = level.terrainAt(x, y);
+                    ctx.fillStyle = terrain.color;
+                    ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
 
-                const entities = level.entitiesAt(x, y);
-                for (const entity of entities) {
-                    ctx.font = `${TilePixelSize}px sans-serif`;
-                    ctx.textBaseline = "middle";
-                    ctx.fillStyle = entity.color;
-                    ctx.fillText(entity.glyph[0], xpx, ypx + TilePixelSize / 2);
+                    const entities = level.entitiesAt(x, y);
+                    for (const entity of entities) {
+                        ctx.font = `${TilePixelSize}px sans-serif`;
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = entity.color;
+                        ctx.fillText(entity.glyph[0], xpx, ypx + TilePixelSize / 2);
+                    }
                 }
             }
         }
@@ -158,6 +182,14 @@ export class Game {
                 case ActionKind.ClimbStairs:
                     this.syncActors();
                     break;
+            }
+            if (actor === this.trackedActor) {
+                switch (action.kind) {
+                    case ActionKind.Move:
+                    case ActionKind.ClimbStairs:
+                        this.updateCamera();
+                        break;
+                }
             }
         }
     }
