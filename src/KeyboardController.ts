@@ -35,8 +35,12 @@ export class KeyboardController extends IController {
         const level = assertNotNull(this.actor.dungeonLevel);
         const x = assertNotNull(this.actor.x) + move.dx;
         const y = assertNotNull(this.actor.y) + move.dy;
-        const terrain = level.terrainAt(x, y);
-        if (terrain.blocksMovement) {
+        if (level.withinBounds(x, y)) {
+            const terrain = level.terrainAt(x, y);
+            if (terrain.blocksMovement) {
+                return null;
+            }
+        } else {
             return null;
         }
         const entities = level.entitiesAt(x, y);

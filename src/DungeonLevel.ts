@@ -1,10 +1,12 @@
+import { Array2d } from "./Array2d";
 import { Entity } from "./Entity";
+import { getFieldOfView, updateFieldOfView } from "./fov";
 import { removeById } from "./Id";
-import { Terrain } from "./Terrain";
-import { assertDefined, isDefined, isNotNull } from "./utils";
+import { Terrain, TerrainKind } from "./Terrain";
+import { isDefined, isNotNull } from "./utils";
 
 export class DungeonLevel {
-    private readonly terrainMap: Array<Terrain>;
+    private readonly terrainMap: Array2d;
     private readonly entityMap: Array<Array<Entity> | undefined>;
     private readonly entities_: Array<Entity> = [];
 
@@ -12,15 +14,16 @@ export class DungeonLevel {
         public readonly width: number,
         public readonly height: number
     ) {
-        this.terrainMap = new Array(width * height).fill(Terrain.Floor);
+        this.terrainMap = new Array2d(width, height);
         for (let x = 0; x < width; x++) {
-            this.terrainMap[this.index(x, 0)] = Terrain.Wall;
-            this.terrainMap[this.index(x, height - 1)] = Terrain.Wall;
+            for (let y = 0; y < height; y++) {
+                const col = this.terrainMap.columns[x];
+                if (Math.random() < 0.05) {
+                    col[y] = TerrainKind.Wall;
+                }
+            }
         }
-        for (let y = 0; y < height; y++) {
-            this.terrainMap[this.index(0, y)] = Terrain.Wall;
-            this.terrainMap[this.index(this.width - 1, y)] = Terrain.Wall;
-        }
+        this.terrainMap.columns[1][1] = TerrainKind.Floor;
         this.entityMap = new Array(width * height);
     }
 
@@ -92,10 +95,19 @@ export class DungeonLevel {
     }
 
     public terrainAt(x: number, y: number): Terrain {
-        return assertDefined(this.terrainMap[this.index(x, y)]);
+        const kind = this.terrainMap.columns[x][y] as TerrainKind;
+        return Terrain[kind];
     }
 
     public withinBounds(x: number, y: number): boolean {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
+    }
+
+    public getFieldOfViewAt(x: number, y: number, r: number): Array2d {
+        return getFieldOfView(this.terrainMap, x, y, r);
+    }
+
+    public updateFieldOfViewAt(fov: Array2d, x: number, y: number, r: number) {
+        updateFieldOfView(this.terrainMap, fov, x, y, r);
     }
 }

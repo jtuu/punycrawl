@@ -6,6 +6,13 @@ export enum ClimbDirection {
     Down
 }
 
+export enum TerrainKind {
+    Floor,
+    Wall,
+    Upstairs,
+    Downstairs
+}
+
 export class Terrain {
     private constructor(
         public readonly color: Color,
@@ -22,4 +29,9 @@ export class Terrain {
     public static readonly Wall  = new Terrain(rgb( 33,  33,  33), true, 1);
     public static readonly Upstairs    = new Terrain(rgb( 200, 33,  33), false, 0, ClimbDirection.Up);
     public static readonly Downstairs  = new Terrain(rgb( 33,  200, 33), false, 0, ClimbDirection.Down);
+
+    public static readonly [TerrainKind.Floor] = Terrain.Floor;
+    public static readonly [TerrainKind.Wall] = Terrain.Wall;
+    public static readonly [TerrainKind.Upstairs] = Terrain.Upstairs;
+    public static readonly [TerrainKind.Downstairs] = Terrain.Downstairs;
 }

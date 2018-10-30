@@ -1,6 +1,7 @@
 import { ActionKind } from "./actions/Action";
 import { Actor } from "./Actor";
 import { DungeonLevel } from "./DungeonLevel";
+import { Visibility } from "./fov";
 import { Human } from "./Human";
 import { Id, sortById } from "./Id";
 import { assertDefined, assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
@@ -94,6 +95,7 @@ export class Game {
         const player = new Human(this);
         this.currentLevel.putEntity(player, 1, 1);
         this.trackedActor = player;
+        player.updateFieldOfView();
         this.updateCamera();
     }
 
@@ -147,24 +149,34 @@ export class Game {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         const halfViewW = Math.floor(ViewWidth / 2);
         const halfViewH = Math.floor(ViewHeight / 2);
-        const startX = this.cameraX - halfViewW;
-        const endX = this.cameraX + halfViewW;
-        const startY = this.cameraY - halfViewH;
-        const endY = this.cameraY + halfViewH;
-        const level = this.currentLevel;
-        for (let x = startX, xpx = 0; x < endX; x++, xpx += TilePixelSize) {
-            for (let y = startY, ypx = 0; y < endY; y++, ypx += TilePixelSize) {
-                if (level.withinBounds(x, y)) {
-                    const terrain = level.terrainAt(x, y);
-                    ctx.fillStyle = terrain.color;
-                    ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
+        const offsetX = this.cameraX - halfViewW;
+        const offsetY = this.cameraY - halfViewH;
 
-                    const entities = level.entitiesAt(x, y);
-                    for (const entity of entities) {
-                        ctx.font = `${TilePixelSize}px sans-serif`;
-                        ctx.textBaseline = "middle";
-                        ctx.fillStyle = entity.color;
-                        ctx.fillText(entity.glyph[0], xpx, ypx + TilePixelSize / 2);
+        const actor = this.trackedActor;
+        if (actor === null) { return; }
+        const fov = actor.fov;
+        if (fov === null) { return; }
+
+        for (let fx = 0, x = this.cameraX - actor.fovRadius; fx < fov.width; fx++, x++) {
+            const col = fov.columns[fx];
+            for (let fy = 0, y = this.cameraY - actor.fovRadius; fy < fov.height; fy++, y++) {
+                const vis = col[fy] as Visibility;
+                if (vis === Visibility.Visible) {
+                    const level = this.currentLevel;
+                    if (level.withinBounds(x, y)) {
+                        const xpx = (x - offsetX) * TilePixelSize;
+                        const ypx = (y - offsetY) * TilePixelSize;
+                        const terrain = level.terrainAt(x, y);
+                        ctx.fillStyle = terrain.color;
+                        ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
+
+                        const entities = level.entitiesAt(x, y);
+                        for (const entity of entities) {
+                            ctx.font = `${TilePixelSize}px sans-serif`;
+                            ctx.textBaseline = "middle";
+                            ctx.fillStyle = entity.color;
+                            ctx.fillText(entity.glyph[0], xpx, ypx + TilePixelSize / 2);
+                        }
                     }
                 }
             }
@@ -176,8 +188,7 @@ export class Game {
         for (const actor_ of this.actors) {
             this.draw(this.ctx);
             const actor = assertNotNull(actor_);
-            const action = await actor.controller.getAction();
-            action.execute(this, actor);
+            const action = await actor.act();
             switch (action.kind) {
                 case ActionKind.ClimbStairs:
                     this.syncActors();

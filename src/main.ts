@@ -1,8 +1,16 @@
 import { Game } from "./Game";
 
 function main() {
-    const game = new Game();
-    game.run();
+    try {
+        const game = new Game();
+        game.run();
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-main();
+if (Module.calledRun) {
+    main();
+} else {
+    Module.onRuntimeInitialized = main;
+}
