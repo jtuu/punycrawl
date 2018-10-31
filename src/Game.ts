@@ -8,8 +8,11 @@ import { Id, sortById } from "./Id";
 import { assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
 const TilePixelSize = 20;
-const ViewWidth = 41; // in tiles
+// size in tiles, should be odd so that the camera can be centered properly
+const ViewWidth = 41;
 const ViewHeight = 25;
+const HalfViewW = (ViewWidth - 1) / 2;
+const HalfViewH = (ViewHeight - 1) / 2;
 
 type ActorDispenserResult = Actor | null;
 class ActorDispenser implements IterableIterator<ActorDispenserResult> {
@@ -73,10 +76,12 @@ class ActorDispenser implements IterableIterator<ActorDispenserResult> {
 }
 
 export class Game {
-    private static readonly defaultFloorWidth: number = 40;
-    private static readonly defaultFloorHeight: number = 25;
-    private readonly canvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
-    private ctx: CanvasRenderingContext2D;
+    private static readonly defaultFloorWidth: number = 100;
+    private static readonly defaultFloorHeight: number = 100;
+    private readonly memoryCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
+    private readonly mainCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
+    private mainCtx: CanvasRenderingContext2D;
+    private memoryCtx: CanvasRenderingContext2D;
     private readonly levels: Array<DungeonLevel> = [];
     private currentLevel: DungeonLevel;
     private readonly actors: ActorDispenser = new ActorDispenser();
@@ -85,13 +90,24 @@ export class Game {
     private trackedActor: Actor | null;
     
     constructor() {
-        const ctx = this.canvas.getContext("2d");
-        if (ctx === null) {
+        const mainCtx = this.mainCanvas.getContext("2d");
+        if (mainCtx === null) {
             throw new Error("Failed to get CanvasRenderingContext2D");
         }
-        this.ctx = ctx;
-        this.canvas.width = TilePixelSize * Game.defaultFloorWidth;
-        this.canvas.height = TilePixelSize * Game.defaultFloorHeight;
+        this.mainCtx = mainCtx;
+
+        const memoryCtx = this.memoryCanvas.getContext("2d");
+        if (memoryCtx === null) {
+            throw new Error("Failed to get CanvasRenderingContext2D");
+        }
+        this.memoryCtx = memoryCtx;
+
+        this.mainCanvas.width = TilePixelSize * ViewWidth;
+        this.mainCanvas.height = TilePixelSize * ViewHeight;
+        this.memoryCanvas.width = TilePixelSize * Game.defaultFloorWidth;
+        this.memoryCanvas.height = TilePixelSize * Game.defaultFloorHeight;
+        this.memoryCanvas.style.opacity = "0.5";
+
         this.currentLevel = this.appendFloor();
         const player = new Human(this);
         this.currentLevel.putEntity(player, 1, 1);
@@ -106,6 +122,8 @@ export class Game {
         if (isNotNull(this.trackedActor)) {
             this.cameraX = assertNotNull(this.trackedActor.x);
             this.cameraY = assertNotNull(this.trackedActor.y);
+            this.memoryCanvas.style.left = `${(-this.cameraX + HalfViewW) * TilePixelSize}px`;
+            this.memoryCanvas.style.top = `${(-this.cameraY + HalfViewH) * TilePixelSize}px`;
         }
     }
 
@@ -136,12 +154,10 @@ export class Game {
         this.actors.sync();
     }
     
-    private draw(ctx: CanvasRenderingContext2D) {
+    private drawView(ctx: CanvasRenderingContext2D) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        const halfViewW = Math.floor(ViewWidth / 2);
-        const halfViewH = Math.floor(ViewHeight / 2);
-        const offsetX = this.cameraX - halfViewW;
-        const offsetY = this.cameraY - halfViewH;
+        const offsetX = this.cameraX - HalfViewW;
+        const offsetY = this.cameraY - HalfViewH;
 
         const actor = this.trackedActor;
         if (actor === null) { return; }
@@ -174,10 +190,17 @@ export class Game {
         }
     }
 
+    private draw() {
+        this.drawView(this.mainCtx);
+        this.memoryCtx.drawImage(this.mainCanvas,
+            (this.cameraX - HalfViewW) * TilePixelSize,
+            (this.cameraY - HalfViewH) * TilePixelSize);
+    }
+
     public async run() {
         this.syncActors();
         for (const actor_ of this.actors) {
-            this.draw(this.ctx);
+            this.draw();
             const actor = assertNotNull(actor_);
             const action = await actor.act();
             switch (action.kind) {
@@ -188,6 +211,7 @@ export class Game {
             if (actor === this.trackedActor) {
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:
+                        this.memoryCtx.clearRect(0, 0, this.memoryCanvas.width, this.memoryCanvas.height);
                         this.currentLevel = assertNotNull(actor.dungeonLevel);
                     case ActionKind.Move:
                         this.updateCamera();
