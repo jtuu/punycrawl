@@ -1,5 +1,6 @@
 import { ActionKind } from "./actions/Action";
 import { Actor } from "./Actor";
+import { ControllerKind } from "./Controller";
 import { DungeonLevel } from "./DungeonLevel";
 import { Visibility } from "./fov";
 import { Goblin } from "./Goblin";
@@ -38,7 +39,7 @@ class ActorDispenser implements IterableIterator<ActorDispenserResult> {
         if (isNotNull(lastId) && this.actors.length > 0) {
             const smallest = this.actors[0];
             const biggest = this.actors[this.actors.length - 1];
-            if (lastId <= smallest.id || lastId >= biggest.id) {
+            if (lastId < smallest.id || lastId >= biggest.id) {
                 this.rewind();
             } else {
                 for (let i = 1; i < this.actors.length; i++) {
@@ -111,11 +112,17 @@ export class Game {
         this.currentLevel = this.appendFloor();
         const player = new Human(this);
         this.currentLevel.putEntity(player, 1, 1);
-        this.currentLevel.putEntity(new Goblin(this), 5, 5);
+        for (let i = 0; i < 5; i++) {
+            this.currentLevel.putEntity(new Goblin(this), 7, i * 5);
+            this.currentLevel.putEntity(new Goblin(this), 8, 5 + i * 5);
+            this.currentLevel.putEntity(new Goblin(this), 9, 10 + i * 5);
+        }
         this.trackedActor = player;
         player.updateFieldOfView();
         this.updateCamera();
-        this.appendFloor();
+        for (let i = 0; i < 10; i++) {
+            this.appendFloor();
+        }
     }
 
     private updateCamera() {
@@ -152,6 +159,7 @@ export class Game {
         }
         this.actors.add(filterInstanceOf(this.currentLevel.entities, Actor));
         this.actors.sync();
+
     }
     
     private drawView(ctx: CanvasRenderingContext2D) {
@@ -200,14 +208,11 @@ export class Game {
     public async run() {
         this.syncActors();
         for (const actor_ of this.actors) {
-            this.draw();
             const actor = assertNotNull(actor_);
-            const action = await actor.act();
-            switch (action.kind) {
-                case ActionKind.ClimbStairs:
-                    this.syncActors();
-                    break;
+            if (actor.controller.kind === ControllerKind.Keyboard) {
+                this.draw();
             }
+            const action = await actor.act();
             if (actor === this.trackedActor) {
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:
@@ -217,6 +222,11 @@ export class Game {
                         this.updateCamera();
                         break;
                 }
+            }
+            switch (action.kind) {
+                case ActionKind.ClimbStairs:
+                    this.syncActors();
+                    break;
             }
         }
     }

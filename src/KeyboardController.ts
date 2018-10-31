@@ -3,7 +3,7 @@ import { ActionFactory } from "./actions/ActionFactory";
 import { ClimbStairsAction } from "./actions/ClimbStairsAction";
 import { MoveAction } from "./actions/MoveAction";
 import { Actor } from "./Actor";
-import { IController } from "./Controller";
+import { ControllerKind, IController } from "./Controller";
 import { Game } from "./Game";
 import { Keyboard } from "./Keyboard";
 import { StrictMap } from "./StrictMap";
@@ -11,6 +11,7 @@ import { ClimbDirection } from "./Terrain";
 import { assertNotNull, isNotNull } from "./utils";
 
 export class KeyboardController extends IController {
+    public readonly kind = ControllerKind.Keyboard;
     private readonly controls: StrictMap<string, Action>;
 
     constructor(

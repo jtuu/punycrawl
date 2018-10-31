@@ -28,7 +28,9 @@ export class DungeonLevel {
             }
         }
         this.terrainMap.columns[1][1] = TerrainKind.Floor;
-        this.terrainMap.columns[5][5] = TerrainKind.Floor;
+        this.terrainMap.columns[7].fill(TerrainKind.Floor);
+        this.terrainMap.columns[8].fill(TerrainKind.Floor);
+        this.terrainMap.columns[9].fill(TerrainKind.Floor);
         this.terrainMap.columns[2][2] = TerrainKind.Downstairs;
         this.terrainMap.columns[3][2] = TerrainKind.Upstairs;
         this.entityMap = new Array(width * height);
