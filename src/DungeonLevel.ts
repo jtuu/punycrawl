@@ -9,6 +9,8 @@ export class DungeonLevel {
     private readonly terrainMap: Array2d;
     private readonly entityMap: Array<Array<Entity> | undefined>;
     private readonly entities_: Array<Entity> = [];
+    public previousLevel: DungeonLevel | null = null;
+    public nextLevel: DungeonLevel | null = null;
 
     constructor(
         public readonly width: number,
@@ -20,10 +22,15 @@ export class DungeonLevel {
                 const col = this.terrainMap.columns[x];
                 if (Math.random() < 0.05) {
                     col[y] = TerrainKind.Wall;
+                } else {
+                    col[y] = TerrainKind.Floor;
                 }
             }
         }
         this.terrainMap.columns[1][1] = TerrainKind.Floor;
+        this.terrainMap.columns[5][5] = TerrainKind.Floor;
+        this.terrainMap.columns[2][2] = TerrainKind.Downstairs;
+        this.terrainMap.columns[3][2] = TerrainKind.Upstairs;
         this.entityMap = new Array(width * height);
     }
 
@@ -96,6 +103,9 @@ export class DungeonLevel {
 
     public terrainAt(x: number, y: number): Terrain {
         const kind = this.terrainMap.columns[x][y] as TerrainKind;
+        if (Terrain[kind] === undefined) {
+            console.log(kind, this.terrainMap.columns);
+        }
         return Terrain[kind];
     }
 

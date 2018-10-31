@@ -1,11 +1,13 @@
 import { Action, ActionKind } from "./actions/Action";
 import { ActionFactory } from "./actions/ActionFactory";
+import { ClimbStairsAction } from "./actions/ClimbStairsAction";
 import { MoveAction } from "./actions/MoveAction";
 import { Actor } from "./Actor";
 import { IController } from "./Controller";
 import { Game } from "./Game";
 import { Keyboard } from "./Keyboard";
 import { StrictMap } from "./StrictMap";
+import { ClimbDirection } from "./Terrain";
 import { assertNotNull, isNotNull } from "./utils";
 
 export class KeyboardController extends IController {
@@ -26,6 +28,7 @@ export class KeyboardController extends IController {
             ["Numpad7", ActionFactory.createMoveAction(-1, -1)],
             ["Numpad8", ActionFactory.createMoveAction( 0, -1)],
             ["Numpad9", ActionFactory.createMoveAction(+1, -1)],
+            ["IntlBackslash", ActionFactory.createClimbStairsAction()]
         ] as Array<[string, Action]>);
     }
 
@@ -50,10 +53,32 @@ export class KeyboardController extends IController {
         return move;
     }
 
+    private transformClimbStairsAction(climb: ClimbStairsAction): Action | null {
+        const level = assertNotNull(this.actor.dungeonLevel);
+        const x = assertNotNull(this.actor.x);
+        const y = assertNotNull(this.actor.y);
+        if (level.withinBounds(x, y)) {
+            const terrain = level.terrainAt(x, y);
+            switch (terrain.climbDirection) {
+                case ClimbDirection.Up:
+                    if (level.previousLevel === null) { return null; }
+                    break;
+                case ClimbDirection.Down:
+                    if (level.nextLevel === null) { return null; }
+                    break;
+            }
+            climb.direction = terrain.climbDirection;
+            return climb;
+        }
+        return null;
+    }
+
     private transformAction(action: Action): Action | null {
         switch (action.kind) {
             case ActionKind.Move:
                 return this.transformMoveAction(action);
+            case ActionKind.ClimbStairs:
+                return this.transformClimbStairsAction(action);
         }
         return action;
     }

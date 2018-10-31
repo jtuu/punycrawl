@@ -17,6 +17,6 @@ export class ActionFactory {
     }
 
     public static createClimbStairsAction(): ClimbStairsAction {
-        return ClimbStairsAction;
+        return new ClimbStairsAction();
     }
 }

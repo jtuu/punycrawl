@@ -2,9 +2,10 @@ import { ActionKind } from "./actions/Action";
 import { Actor } from "./Actor";
 import { DungeonLevel } from "./DungeonLevel";
 import { Visibility } from "./fov";
+import { Goblin } from "./Goblin";
 import { Human } from "./Human";
 import { Id, sortById } from "./Id";
-import { assertDefined, assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
+import { assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
 const TilePixelSize = 20;
 const ViewWidth = 41; // in tiles
@@ -77,7 +78,7 @@ export class Game {
     private readonly canvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
     private ctx: CanvasRenderingContext2D;
     private readonly levels: Array<DungeonLevel> = [];
-    private currentLevelIdx: number = -1;
+    private currentLevel: DungeonLevel;
     private readonly actors: ActorDispenser = new ActorDispenser();
     private cameraX: number = 0;
     private cameraY: number = 0;
@@ -91,12 +92,14 @@ export class Game {
         this.ctx = ctx;
         this.canvas.width = TilePixelSize * Game.defaultFloorWidth;
         this.canvas.height = TilePixelSize * Game.defaultFloorHeight;
-        this.changeLevel(this.addFloor());
+        this.currentLevel = this.appendFloor();
         const player = new Human(this);
         this.currentLevel.putEntity(player, 1, 1);
+        this.currentLevel.putEntity(new Goblin(this), 5, 5);
         this.trackedActor = player;
         player.updateFieldOfView();
         this.updateCamera();
+        this.appendFloor();
     }
 
     private updateCamera() {
@@ -106,35 +109,23 @@ export class Game {
         }
     }
 
-    private changeLevel(levelIdx: number) {
-        assertDefined(this.levels[levelIdx]);
-        this.currentLevelIdx = levelIdx;
-        this.syncActors();
-    }
-
-    private get previousLevel(): DungeonLevel | null {
-        const level = this.levels[this.currentLevelIdx - 1];
-        return isDefined(level) ? level : null;
-    }
-
-    private get nextLevel(): DungeonLevel | null {
-        const level = this.levels[this.currentLevelIdx + 1];
-        return isDefined(level) ? level : null;
-    }
-
-    private get currentLevel(): DungeonLevel {
-        return assertDefined(this.levels[this.currentLevelIdx]);
-    }
-
-    private addFloor(): number {
-        const floor = new DungeonLevel(Game.defaultFloorWidth, Game.defaultFloorHeight);
-        return this.levels.push(floor) - 1;
+    private appendFloor(): DungeonLevel {
+        const newFloor = new DungeonLevel(Game.defaultFloorWidth, Game.defaultFloorHeight);
+        const head = this.levels[this.levels.length - 1];
+        if (isDefined(head)) {
+            head.nextLevel = newFloor;
+            newFloor.previousLevel = head;
+        } else {
+            newFloor.previousLevel = null;
+        }
+        this.levels.push(newFloor);
+        return newFloor;
     }
 
     private syncActors() {
         this.actors.clear();
-        const prev = this.previousLevel;
-        const next = this.nextLevel;
+        const prev = this.currentLevel.previousLevel;
+        const next = this.currentLevel.nextLevel;
         if (isNotNull(prev)) {
             this.actors.add(filterInstanceOf(prev.entities, Actor));
         }
@@ -196,8 +187,9 @@ export class Game {
             }
             if (actor === this.trackedActor) {
                 switch (action.kind) {
-                    case ActionKind.Move:
                     case ActionKind.ClimbStairs:
+                        this.currentLevel = assertNotNull(actor.dungeonLevel);
+                    case ActionKind.Move:
                         this.updateCamera();
                         break;
                 }
