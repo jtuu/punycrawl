@@ -27,6 +27,15 @@ digital FOV with recursive shadowcasting algorithm.
 /* memcpy */
 #include <string.h>
 
+// this needs to match the enum in ts
+typedef enum {
+    Wall,
+    NUM_VISION_BLOCKING_TERRAIN,
+    Floor,
+    Upstairs,
+    Downstairs
+} TerrainKind;
+
 struct _rays
 {
   int bottom_ray_touch_top_wall_u;
@@ -664,7 +673,7 @@ digital_los(int **map, int map_size_x, int map_size_y,
         break;
       }
       if ((grid0_is_illegal)
-          || (map[x0][y0] != 0))
+          || (map[x0][y0] < NUM_VISION_BLOCKING_TERRAIN))
       {
         if (u < du_abs)
           result = 0;
@@ -703,7 +712,7 @@ digital_los(int **map, int map_size_x, int map_size_y,
 
       /* update top and bottom ray */
       if ((grid0_is_illegal)
-          || (map[x0][y0] != 0))
+          || (map[x0][y0] < NUM_VISION_BLOCKING_TERRAIN))
       {
         if (which_side_of_line(bottom_ray_touch_top_wall_u,
                                bottom_ray_touch_top_wall_v,
@@ -733,7 +742,7 @@ digital_los(int **map, int map_size_x, int map_size_y,
         }
       }
       if ((grid1_is_illegal)
-          || (map[x1][y1] != 0))
+          || (map[x1][y1] < NUM_VISION_BLOCKING_TERRAIN))
       {
         if (which_side_of_line(top_ray_touch_bottom_wall_u,
                                top_ray_touch_bottom_wall_v,
@@ -765,7 +774,7 @@ digital_los(int **map, int map_size_x, int map_size_y,
 
       /* remember wall */
       if ((grid0_is_illegal)
-          || (map[x0][y0] != 0))
+          || (map[x0][y0] < NUM_VISION_BLOCKING_TERRAIN))
       {
         if (which_side_of_line(top_ray_touch_bottom_wall_u,
                                top_ray_touch_bottom_wall_v,
@@ -810,7 +819,7 @@ digital_los(int **map, int map_size_x, int map_size_y,
         }
       }
       if ((grid1_is_illegal)
-          || (map[x1][y1] != 0))
+          || (map[x1][y1] < NUM_VISION_BLOCKING_TERRAIN))
       {
         if (which_side_of_line(bottom_ray_touch_top_wall_u,
                                bottom_ray_touch_top_wall_v,
@@ -1006,7 +1015,7 @@ digital_fov_recursive_body(int **map,
         map_fov[x - center_x + radius][y - center_y + radius] = 1;
 
       if ((illegal)
-          || (map[x][y] != 0))
+          || (map[x][y] < NUM_VISION_BLOCKING_TERRAIN))
       {
         if (!previous_grid_is_wall)
         {
