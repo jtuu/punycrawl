@@ -25,13 +25,17 @@ function write(filename, data) {
     });
 }
 
+function transformInterface(interface) {
+    return "declare " + interface.replace(/^interface/, "type").replace(/{/, "= {") + ";";
+}
+
 function makeTypes(data, rootName) {
     let result = "";
     const interfaces = json2ts(data, {rootName});
     for (let i = 0; i < interfaces.length - 1; i++) {
-        result += "export " + interfaces[i] + "\n\n";
+        result += transformInterface(interfaces[i]) + "\n\n";
     }
-    result += "export " + interfaces[interfaces.length - 1] + "\n";
+    result += transformInterface(interfaces[interfaces.length - 1]) + "\n";
     return result;
 }
 
@@ -80,7 +84,10 @@ async function main(inputFile, outputFile, outputTypeFile) {
     if (outputTypeFile) {
         const outTypeFilePath = pathlib.resolve(cwd, outputTypeFile);
         const outTypeFileBasename = pathlib.parse(outputTypeFile).name;
-        const typeRootname = outTypeFileBasename.charAt(0).toUpperCase() + outTypeFileBasename.toLowerCase().slice(1);
+        let typeRootname = outTypeFileBasename.charAt(0).toUpperCase() + outTypeFileBasename.toLowerCase().slice(1);
+        if (typeRootname.endsWith(".d")) {
+            typeRootname = typeRootname.slice(0, -2);
+        }
         const sheetTypes = makeTypes(await sheetMeta, typeRootname);
         const typesWrite = write(outTypeFilePath, sheetTypes);
         writes.push(typesWrite);

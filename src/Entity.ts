@@ -1,4 +1,3 @@
-import { Color } from "./Color";
 import { DungeonLevel } from "./DungeonLevel";
 import { Game } from "./Game";
 import { Id } from "./Id";
@@ -13,8 +12,7 @@ export class Entity {
     
     constructor(
         public game: Game,
-        public glyph: string,
-        public color: Color,
+        public sprite: keyof Spritesheet,
         public readonly maxHealth: number
     ) {
         this.id = Entity.idCounter++;

@@ -1,6 +1,5 @@
 import { Action, ActionKind } from "./actions/Action";
 import { Array2d } from "./Array2d";
-import { Color } from "./Color";
 import { Controller, IController } from "./Controller";
 import { Entity } from "./Entity";
 import { Game } from "./Game";
@@ -14,12 +13,11 @@ export abstract class Actor extends Entity {
 
     constructor(
         game: Game,
-        glyph: string,
-        color: Color,
+        sprite: keyof Spritesheet,
         maxHealth: number,
         controllerCtor: new (...args: ConstructorParameters<Controller>) => IController
     ) {
-        super(game, glyph, color, maxHealth);
+        super(game, sprite, maxHealth);
         this.controller = new controllerCtor(game, this);
         this.updateFieldOfView();
     }

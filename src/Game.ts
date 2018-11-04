@@ -6,9 +6,10 @@ import { Visibility } from "./fov";
 import { Goblin } from "./Goblin";
 import { Human } from "./Human";
 import { Id, sortById } from "./Id";
+import { SpriteManager } from "./SpriteManager";
 import { assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
-const TilePixelSize = 20;
+const TilePixelSize = 32;
 // size in tiles, should be odd so that the camera can be centered properly
 const ViewWidth = 41;
 const ViewHeight = 25;
@@ -89,6 +90,7 @@ export class Game {
     private cameraX: number = 0;
     private cameraY: number = 0;
     private trackedActor: Actor | null;
+    private readonly sprites: SpriteManager<Spritesheet> = new SpriteManager("spritesheet.gif", "spritesheet.json");
     
     constructor() {
         const mainCtx = this.mainCanvas.getContext("2d");
@@ -182,15 +184,16 @@ export class Game {
                         const xpx = (x - offsetX) * TilePixelSize;
                         const ypx = (y - offsetY) * TilePixelSize;
                         const terrain = level.terrainAt(x, y);
-                        ctx.fillStyle = terrain.color;
+                        ctx.fillStyle = terrain.bgColor;
                         ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
+                        const terrainSprite = terrain.sprite;
+                        if (isNotNull(terrainSprite)) {
+                            this.sprites.draw(ctx, terrainSprite, xpx, ypx);
+                        }
 
                         const entities = level.entitiesAt(x, y);
                         for (const entity of entities) {
-                            ctx.font = `${TilePixelSize}px sans-serif`;
-                            ctx.textBaseline = "middle";
-                            ctx.fillStyle = entity.color;
-                            ctx.fillText(entity.glyph[0], xpx, ypx + TilePixelSize / 2);
+                            this.sprites.draw(ctx, entity.sprite, xpx, ypx);
                         }
                     }
                 }
@@ -206,6 +209,7 @@ export class Game {
     }
 
     public async run() {
+        await this.sprites.load();
         this.syncActors();
         for (const actor_ of this.actors) {
             const actor = assertNotNull(actor_);
