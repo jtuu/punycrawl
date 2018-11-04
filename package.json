@@ -4,11 +4,6 @@
   "description": "",
   "main": "",
   "scripts": {
-    "clean": "rm build/*.js || true",
-    "tsc": "node_modules/typescript/bin/tsc",
-    "fix_module_names": "find build -name '*.js' -exec sed -i '/import/s/\";/.js\";/' {} \\;",
-    "build-wasm": "emcc -o build/digital-fov.js src/digital-fov.c -s EXPORTED_FUNCTIONS='[\"_digital_los\",\"_digital_fov\",\"_create_array2d\",\"_free_array2d\"]' -s WASM=1 -Os",
-    "build": "npm run build-wasm | npm run tsc -- --build src/tsconfig.json && npm run fix_module_names || true",
     "server": "pushd build; python3 -m http.server; popd"
   },
   "author": "",
