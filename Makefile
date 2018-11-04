@@ -2,7 +2,7 @@ TSC = node_modules/typescript/bin/tsc
 EMCC = emcc
 OUTDIR = build
 
-all: $(OUTDIR) js wasm html
+all: $(OUTDIR) js wasm html spritesheet
 
 $(OUTDIR):
 	-mkdir $(OUTDIR)
@@ -27,5 +27,16 @@ build/index.html: src/index.html
 
 html: $(OUTDIR)/index.html
 
+$(OUTDIR)/spritesheet.gif: resources/sprites.json
+	node scripts/gen_spritesheet.js -i $< -o $@
+
+$(OUTDIR)/spritesheet.json: $(OUTDIR)/spritesheet.gif
+
+src/spritesheet.ts: resources/sprites.json
+	node scripts/gen_spritesheet.js -i $< -t $@
+
+spritesheet: $(OUTDIR)/spritesheet.json src/spritesheet.ts
+
 clean:
 	-rm -r $(OUTDIR)
+	-rm src/spritesheet.ts
