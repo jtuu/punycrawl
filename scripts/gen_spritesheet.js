@@ -43,7 +43,7 @@ async function makeMeta(filenames) {
     const sheetMeta = {};
     let ox = 0;
     for (const filename of filenames) {
-        const size = await exec(`magick identify -ping -format "%wx%h" ${filename}`);
+        const size = await exec(`identify -ping -format "%wx%h" ${filename}`);
         const [w, h] = size.split("x").map(Number);
         const {name} = pathlib.parse(filename);
         sheetMeta[name] = {
@@ -58,7 +58,7 @@ async function makeMeta(filenames) {
 
 async function main(inputFile, outputFile, outputTypeFile) {
     try {
-        await exec("which magick");
+        await exec("which identify");
     } catch (err) {
         console.error("ImageMagick not found");
         return;
@@ -75,7 +75,7 @@ async function main(inputFile, outputFile, outputTypeFile) {
     if (outputFile) {
         const outDirPath = pathlib.dirname(pathlib.resolve(cwd, outputFile));
         const outFileBasename = pathlib.parse(outputFile).name;
-        const sheetWrite = exec(`magick montage -mode concatenate -background none -tile x1 ${inputFilenames.join(" ")} ${outDirPath}/${outFileBasename}.gif`);
+        const sheetWrite = exec(`montage -mode concatenate -background none -tile x1 ${inputFilenames.join(" ")} ${outDirPath}/${outFileBasename}.gif`);
         writes.push(sheetWrite);
         const metaWrite = write(`${outDirPath}/${outFileBasename}.json`, JSON.stringify(await sheetMeta));
         writes.push(metaWrite);

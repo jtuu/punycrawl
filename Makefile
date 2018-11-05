@@ -2,7 +2,7 @@ TSC = node_modules/typescript/bin/tsc
 EMCC = emcc
 OUTDIR = build
 
-all: js wasm html spritesheet
+all: spritesheet js wasm html
 
 $(OUTDIR):
 	-mkdir $(OUTDIR)
