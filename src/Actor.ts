@@ -1,4 +1,4 @@
-import { Action, ActionKind } from "./actions/Action";
+import { Action } from "./actions/Action";
 import { Array2d } from "./Array2d";
 import { Controller, IController } from "./Controller";
 import { Entity } from "./Entity";
@@ -45,14 +45,9 @@ export abstract class Actor extends Entity {
     }
 
     public async act(): Promise<Action> {
+        this.updateFieldOfView();
         const action = await this.controller.getAction();
         action.execute(this.game, this);
-        switch (action.kind) {
-            case ActionKind.Move:
-            case ActionKind.ClimbStairs:
-                this.updateFieldOfView();
-                break;
-        }
         return action;
     }
 }

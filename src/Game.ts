@@ -1,6 +1,5 @@
 import { ActionKind } from "./actions/Action";
 import { Actor } from "./Actor";
-import { ControllerKind } from "./Controller";
 import { DungeonLevel } from "./DungeonLevel";
 import { Visibility } from "./fov";
 import { Goblin } from "./Goblin";
@@ -82,7 +81,7 @@ export class Game {
     private static readonly defaultFloorHeight: number = 100;
     private readonly memoryCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
     private readonly mainCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
-    private mainCtx: CanvasRenderingContext2D;
+    public mainCtx: CanvasRenderingContext2D;
     private memoryCtx: CanvasRenderingContext2D;
     private readonly levels: Array<DungeonLevel> = [];
     private currentLevel: DungeonLevel;
@@ -114,10 +113,10 @@ export class Game {
         this.currentLevel = this.appendFloor();
         const player = new Human(this);
         this.currentLevel.putEntity(player, 1, 1);
-        for (let i = 0; i < 5; i++) {
-            this.currentLevel.putEntity(new Goblin(this), 7, i * 5);
-            this.currentLevel.putEntity(new Goblin(this), 8, 5 + i * 5);
-            this.currentLevel.putEntity(new Goblin(this), 9, 10 + i * 5);
+        for (let i = 0; i < 10; i++) {
+            this.currentLevel.putEntity(new Goblin(this), 7, i * 2);
+            this.currentLevel.putEntity(new Goblin(this), 8, 5 + i * 2);
+            this.currentLevel.putEntity(new Goblin(this), 9, 10 + i * 2);
         }
         this.trackedActor = player;
         player.updateFieldOfView();
@@ -201,7 +200,7 @@ export class Game {
         }
     }
 
-    private draw() {
+    public draw() {
         this.drawView(this.mainCtx);
         this.memoryCtx.drawImage(this.mainCanvas,
             (this.cameraX - HalfViewW) * TilePixelSize,
@@ -213,10 +212,8 @@ export class Game {
         this.syncActors();
         for (const actor_ of this.actors) {
             const actor = assertNotNull(actor_);
-            if (actor.controller.kind === ControllerKind.Keyboard) {
-                this.draw();
-            }
             const action = await actor.act();
+            actor.invalidatePathmapCache();
             if (actor === this.trackedActor) {
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:

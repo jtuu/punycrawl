@@ -85,6 +85,7 @@ export class KeyboardController extends IController {
     }
 
     public async getAction(): Promise<Action> {
+        this.game.draw();
         for await (const keyPress of KeyboardController.keyboard.keyPresses) {
             if (KeyboardController.controls.has(keyPress.code)) {
                 const action = this.transformAction(KeyboardController.controls.get(keyPress.code));

@@ -1,11 +1,12 @@
 import { Array2d } from "./Array2d";
 import { Entity } from "./Entity";
 import { getFieldOfView, updateFieldOfView } from "./fov";
+import { Grid } from "./Grid";
 import { removeById } from "./Id";
 import { Terrain, TerrainKind } from "./Terrain";
 import { isDefined, isNotNull } from "./utils";
 
-export class DungeonLevel {
+export class DungeonLevel extends Grid {
     private readonly terrainMap: Array2d;
     private readonly entityMap: Array<Array<Entity> | undefined>;
     private readonly entities_: Array<Entity> = [];
@@ -13,9 +14,10 @@ export class DungeonLevel {
     public nextLevel: DungeonLevel | null = null;
 
     constructor(
-        public readonly width: number,
-        public readonly height: number
+        width: number,
+        height: number
     ) {
+        super(width, height);
         this.terrainMap = new Array2d(width, height);
         for (let x = 0; x < width; x++) {
             for (let y = 0; y < height; y++) {
@@ -34,10 +36,6 @@ export class DungeonLevel {
         this.terrainMap.columns[2][2] = TerrainKind.Downstairs;
         this.terrainMap.columns[3][2] = TerrainKind.Upstairs;
         this.entityMap = new Array(width * height);
-    }
-
-    private index(x: number, y: number): number {
-        return this.width * y + x;
     }
 
     private putEntityWithin(entity: Entity, x: number, y: number) {
@@ -105,14 +103,7 @@ export class DungeonLevel {
 
     public terrainAt(x: number, y: number): Terrain {
         const kind = this.terrainMap.columns[x][y] as TerrainKind;
-        if (Terrain[kind] === undefined) {
-            console.log(kind, this.terrainMap.columns);
-        }
         return Terrain[kind];
-    }
-
-    public withinBounds(x: number, y: number): boolean {
-        return x >= 0 && x < this.width && y >= 0 && y < this.height;
     }
 
     public getFieldOfViewAt(x: number, y: number, r: number): Array2d {
