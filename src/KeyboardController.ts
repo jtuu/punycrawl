@@ -5,6 +5,7 @@ import { MoveAction } from "./actions/MoveAction";
 import { Actor } from "./Actor";
 import { ControllerKind, IController } from "./Controller";
 import { Game } from "./Game";
+import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
 import { Keyboard } from "./Keyboard";
 import { StrictMap } from "./StrictMap";
 import { ClimbDirection } from "./Terrain";
@@ -12,25 +13,24 @@ import { assertNotNull, isNotNull } from "./utils";
 
 export class KeyboardController extends IController {
     public readonly kind = ControllerKind.Keyboard;
-    private readonly controls: StrictMap<string, Action>;
+    private static readonly controls: StrictMap<string, Action> = new StrictMap([
+        ["Numpad1", ActionFactory.createMoveAction(...SW)],
+        ["Numpad2", ActionFactory.createMoveAction(...S)],
+        ["Numpad3", ActionFactory.createMoveAction(...SE)],
+        ["Numpad4", ActionFactory.createMoveAction(...W)],
+        ["Numpad5", ActionFactory.createRestAction()],
+        ["Numpad6", ActionFactory.createMoveAction(...E)],
+        ["Numpad7", ActionFactory.createMoveAction(...NW)],
+        ["Numpad8", ActionFactory.createMoveAction(...N)],
+        ["Numpad9", ActionFactory.createMoveAction(...NE)],
+        ["IntlBackslash", ActionFactory.createClimbStairsAction()]
+    ] as Array<[string, Action]>);
 
     constructor(
         game: Game,
         actor: Actor
     ) {
         super(game, actor);
-        this.controls = new StrictMap([
-            ["Numpad1", ActionFactory.createMoveAction(-1, +1)],
-            ["Numpad2", ActionFactory.createMoveAction( 0, +1)],
-            ["Numpad3", ActionFactory.createMoveAction(+1, +1)],
-            ["Numpad4", ActionFactory.createMoveAction(-1,  0)],
-            ["Numpad5", ActionFactory.createRestAction()],
-            ["Numpad6", ActionFactory.createMoveAction(+1,  0)],
-            ["Numpad7", ActionFactory.createMoveAction(-1, -1)],
-            ["Numpad8", ActionFactory.createMoveAction( 0, -1)],
-            ["Numpad9", ActionFactory.createMoveAction(+1, -1)],
-            ["IntlBackslash", ActionFactory.createClimbStairsAction()]
-        ] as Array<[string, Action]>);
     }
 
     private static readonly keyboard: Keyboard = new Keyboard();
@@ -86,8 +86,8 @@ export class KeyboardController extends IController {
 
     public async getAction(): Promise<Action> {
         for await (const keyPress of KeyboardController.keyboard.keyPresses) {
-            if (this.controls.has(keyPress.code)) {
-                const action = this.transformAction(this.controls.get(keyPress.code));
+            if (KeyboardController.controls.has(keyPress.code)) {
+                const action = this.transformAction(KeyboardController.controls.get(keyPress.code));
                 if (isNotNull(action)) {
                     return action;
                 }
