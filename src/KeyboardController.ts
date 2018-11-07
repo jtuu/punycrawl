@@ -84,14 +84,21 @@ export class KeyboardController extends IController {
         return action;
     }
 
+    private sleepMode = false;
+
     public async getAction(): Promise<Action> {
-        this.game.draw();
+        await this.game.awaitDraw();
+        if (this.sleepMode) {
+            return ActionFactory.createRestAction();
+        }
         for await (const keyPress of KeyboardController.keyboard.keyPresses) {
             if (KeyboardController.controls.has(keyPress.code)) {
                 const action = this.transformAction(KeyboardController.controls.get(keyPress.code));
                 if (isNotNull(action)) {
                     return action;
                 }
+            } else {
+                this.sleepMode = true;
             }
         }
         throw new Error("Keyboard broke");

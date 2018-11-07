@@ -77,8 +77,8 @@ class ActorDispenser implements IterableIterator<ActorDispenserResult> {
 }
 
 export class Game {
-    private static readonly defaultFloorWidth: number = 100;
-    private static readonly defaultFloorHeight: number = 100;
+    private static readonly defaultFloorWidth: number = 30;
+    private static readonly defaultFloorHeight: number = 50;
     private readonly memoryCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
     private readonly mainCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
     public mainCtx: CanvasRenderingContext2D;
@@ -204,6 +204,13 @@ export class Game {
         this.memoryCtx.drawImage(this.mainCanvas,
             (this.cameraX - HalfViewW) * TilePixelSize,
             (this.cameraY - HalfViewH) * TilePixelSize);
+    }
+
+    public awaitDraw(): Promise<any> {
+        return new Promise(resolve => {
+            this.draw();
+            requestAnimationFrame(resolve);
+        });
     }
 
     public async run() {
