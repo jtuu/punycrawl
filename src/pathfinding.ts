@@ -6,8 +6,9 @@ import { assertNotNull } from "./utils";
 
 export class Pathmap extends Grid {
     private static readonly defaultValue: number = 255;
-    private static readonly biasedDirections = ordinalDirections.concat(cardinalDirections);
+    private static readonly biasedDirections = ordinalDirections.concat(cardinalDirections, [0, 0]);
     private readonly map: Uint8Array;
+    private reachesTarget_: boolean = false;
 
     constructor(
         width: number, height: number,
@@ -16,6 +17,10 @@ export class Pathmap extends Grid {
         super(width, height);
         this.map = new Uint8Array(width * height);
         this.map.fill(Pathmap.defaultValue);
+    }
+
+    public get reachesTarget(): boolean {
+        return this.reachesTarget_;
     }
 
     private travelable(x: number, y: number): boolean {
@@ -27,6 +32,7 @@ export class Pathmap extends Grid {
     }
 
     public update() {
+        this.reachesTarget_ = false;
         const level = this.target.dungeonLevel;
         if (level === null) { return; }
         this.map.fill(Pathmap.defaultValue);
@@ -43,6 +49,7 @@ export class Pathmap extends Grid {
                 const nx = curx + nextDir[0];
                 const ny = cury + nextDir[1];
                 if (nx === tx && ny === ty) {
+                    this.reachesTarget_ = true;
                     this.map[this.index(nx, ny)] = 0;
                 } else if (this.withinBounds(nx, ny) && this.travelable(nx, ny)) {
                     const nextIdx = this.index(nx, ny);
@@ -78,4 +85,12 @@ export class Pathmap extends Grid {
         }
         return bestDir;
     }
+
+    public distanceAt(x: number, y: number): number {
+        return this.map[this.index(x, y)];
+    }
+}
+
+export function* path(): IterableIterator<Vec2> {
+
 }
