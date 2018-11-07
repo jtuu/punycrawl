@@ -119,7 +119,6 @@ export class Game {
             this.currentLevel.putEntity(new Goblin(this), 9, 10 + i * 2);
         }
         this.trackedActor = player;
-        player.updateFieldOfView();
         this.updateCamera();
         for (let i = 0; i < 10; i++) {
             this.appendFloor();
@@ -214,6 +213,7 @@ export class Game {
             const actor = assertNotNull(actor_);
             const action = await actor.act();
             actor.invalidatePathmapCache();
+            actor.invalidateFovCache();
             if (actor === this.trackedActor) {
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:
