@@ -76,3 +76,15 @@ export function vectorDirection(vec: Vec2): Direction {
     }
     throw new Error("No direction found");
 }
+
+export function manhattanDistance(ax: number, ay: number, bx: number, by: number): number {
+    return Math.abs(ax - bx) + Math.abs(ay - by);
+}
+
+export function distance(ax: number, ay: number, bx: number, by: number): number {
+    return Math.hypot(ax - bx, ay - by);
+}
+
+export function normalize(vec: Vec2): Vec2 {
+    return [Math.sign(vec[0]), Math.sign(vec[1])];
+}
