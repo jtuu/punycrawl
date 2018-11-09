@@ -14,6 +14,8 @@ const ViewWidth = 41;
 const ViewHeight = 25;
 const HalfViewW = (ViewWidth - 1) / 2;
 const HalfViewH = (ViewHeight - 1) / 2;
+const HpBarHeight = 3;
+const HpBarOffset = TilePixelSize - HpBarHeight;
 
 type ActorDispenserResult = Actor | null;
 class ActorDispenser implements IterableIterator<ActorDispenserResult> {
@@ -192,6 +194,12 @@ export class Game {
                         const entities = level.entitiesAt(x, y);
                         for (const entity of entities) {
                             this.sprites.draw(ctx, entity.sprite, xpx, ypx);
+                            const hpPercent = Math.max(entity.health / entity.maxHealth, 0);
+                            const barWidth = Math.floor(TilePixelSize * hpPercent);
+                            ctx.fillStyle = "green";
+                            ctx.fillRect(xpx, ypx + HpBarOffset, barWidth, HpBarHeight);
+                            ctx.fillStyle = "red";
+                            ctx.fillRect(xpx + barWidth, ypx + HpBarOffset, TilePixelSize - barWidth, HpBarHeight);
                         }
                     }
                 }

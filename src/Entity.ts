@@ -9,7 +9,7 @@ export class Entity {
     public dungeonLevel: DungeonLevel | null = null;
     public x: number | null = null;
     public y: number | null = null;
-    private health: number;
+    private health_: number;
     private pathmap_: Pathmap | null = null;
     private pathmapIsFresh: boolean = false;
     
@@ -19,15 +19,19 @@ export class Entity {
         public readonly maxHealth: number
     ) {
         this.id = Entity.idCounter++;
-        this.health = maxHealth;
+        this.health_ = maxHealth;
+    }
+
+    public get health(): number {
+        return this.health_;
     }
 
     public takeDamage(dmg: number) {
-        this.health -= Math.abs(dmg);
+        this.health_ -= Math.abs(dmg);
     }
 
     public get alive(): boolean {
-        return this.health > 0;
+        return this.health_ > 0;
     }
 
     public invalidatePathmapCache() {
@@ -36,7 +40,7 @@ export class Entity {
 
     public get pathmap(): Pathmap {
         if (this.dungeonLevel === null) {
-            throw new Error();
+            throw new Error("Can't get pathmap for entity that has no location");
         }
         if (this.pathmap_ === null) {
             this.pathmap_ = new Pathmap(this.dungeonLevel.width, this.dungeonLevel.height, this);
