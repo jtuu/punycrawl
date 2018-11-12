@@ -1,8 +1,11 @@
 import { Action } from "./actions/Action";
 import { ActionFactory } from "./actions/ActionFactory";
+import { Actor } from "./Actor";
 import { ControllerKind, IController } from "./Controller";
+import { Bind } from "./decorators";
 import { Entity } from "./Entity";
 import { Visibility } from "./fov";
+import { Game, GameEventTopic } from "./Game";
 import { distance, Vec2 } from "./geometry";
 import { Human } from "./Human";
 import { blindPath, drunkWalk } from "./pathfinding";
@@ -15,6 +18,18 @@ export class AIController extends IController {
     private wanderTarget: Vec2 | null = null;
     private wanderPath: IterableIterator<Vec2> | null = null;
     private wanderCounter: number = 0;
+
+    constructor(game: Game, actor: Actor) {
+        super(game, actor);
+        this.game.addEventListener(GameEventTopic.Death, this.onEntityDeath);
+    }
+
+    @Bind
+    private onEntityDeath(entity: Entity) {
+        if (entity === this.attackTarget) {
+            this.attackTarget = null;
+        }
+    }
 
     private findNewAttackTarget(): Entity | null {
         const level = this.actor.dungeonLevel;
@@ -136,5 +151,9 @@ export class AIController extends IController {
             return chase;
         }
         return this.wander() || ActionFactory.createRestAction();
+    }
+
+    public dispose() {
+        this.game.removeEventListener(GameEventTopic.Death, this.onEntityDeath);
     }
 }

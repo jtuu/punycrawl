@@ -18,6 +18,7 @@ export abstract class IController {
     ) {}
 
     public abstract async getAction(): Promise<Action>;
+    public abstract dispose(): void;
 }
 
 export type Controller = typeof AIController | typeof KeyboardController;

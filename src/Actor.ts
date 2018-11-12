@@ -3,7 +3,7 @@ import { Array2d } from "./Array2d";
 import { Controller, IController } from "./Controller";
 import { Entity } from "./Entity";
 import { Game } from "./Game";
-import { assertNotNull } from "./utils";
+import { assertNotNull, isNotNull } from "./utils";
 
 export abstract class Actor extends Entity {
     private static readonly defaultFovRadius = 10;
@@ -51,5 +51,13 @@ export abstract class Actor extends Entity {
         const action = await this.controller.getAction();
         action.execute(this.game, this);
         return action;
+    }
+
+    protected die() {
+        super.die();
+        this.controller.dispose();
+        if (isNotNull(this.fov_)) {
+            this.fov_.dispose();
+        }
     }
 }

@@ -1,9 +1,10 @@
 import { DungeonLevel } from "./DungeonLevel";
-import { Game } from "./Game";
+import { Game, GameEventTopic } from "./Game";
 import { Id } from "./Id";
 import { Pathmap } from "./pathfinding";
+import { isNotNull } from "./utils";
 
-export class Entity {
+export abstract class Entity {
     private static idCounter: number = 0;
     public readonly id: Id;
     public dungeonLevel: DungeonLevel | null = null;
@@ -28,10 +29,22 @@ export class Entity {
 
     public takeDamage(dmg: number) {
         this.health_ -= Math.abs(dmg);
+        if (this.health_ <= 0) {
+            this.die();
+        }
     }
 
     public get alive(): boolean {
         return this.health_ > 0;
+    }
+
+    protected die() {
+        this.health_ = 0;
+        this.game.emit(GameEventTopic.Death, this);
+        const level = this.dungeonLevel;
+        if (isNotNull(level)) {
+            level.removeEntity(this);
+        }
     }
 
     public invalidatePathmapCache() {

@@ -1,6 +1,9 @@
 import { ActionKind } from "./actions/Action";
 import { Actor } from "./Actor";
+import { Bind } from "./decorators";
 import { DungeonLevel } from "./DungeonLevel";
+import { Entity } from "./Entity";
+import { EventEmitter } from "./EventEmitter";
 import { Visibility } from "./fov";
 import { Goblin } from "./Goblin";
 import { Human } from "./Human";
@@ -78,7 +81,15 @@ class ActorDispenser implements IterableIterator<ActorDispenserResult> {
     }
 }
 
-export class Game {
+export enum GameEventTopic {
+    Death
+}
+
+type GameEventTopicMap = {
+    [GameEventTopic.Death]: Entity;
+};
+
+export class Game extends EventEmitter<GameEventTopicMap> {
     private static readonly defaultFloorWidth: number = 100;
     private static readonly defaultFloorHeight: number = 100;
     private readonly memoryCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
@@ -92,8 +103,10 @@ export class Game {
     private cameraY: number = 0;
     private trackedActor: Actor | null;
     private readonly sprites: SpriteManager<Spritesheet> = new SpriteManager("spritesheet.gif", "spritesheet.json");
+    private running: boolean = false;
     
     constructor() {
+        super();
         const mainCtx = this.mainCanvas.getContext("2d");
         if (mainCtx === null) {
             throw new Error("Failed to get CanvasRenderingContext2D");
@@ -124,6 +137,17 @@ export class Game {
         this.updateCamera();
         for (let i = 0; i < 10; i++) {
             this.appendFloor();
+        }
+
+        this.addEventListener(GameEventTopic.Death, this.onEntityDeath);
+    }
+
+    @Bind
+    private onEntityDeath(entity: Entity) {
+        this.syncActors();
+        if (entity === this.trackedActor) {
+            this.trackedActor = null;
+            this.running = false;
         }
     }
 
@@ -215,6 +239,7 @@ export class Game {
     }
 
     public async run() {
+        this.running = true;
         await this.sprites.load();
         this.syncActors();
         for (const actor_ of this.actors) {
@@ -237,6 +262,7 @@ export class Game {
                     this.syncActors();
                     break;
             }
+            if (!this.running) { break; }
         }
     }
 }

@@ -96,4 +96,9 @@ export class KeyboardController extends IController {
         }
         throw new Error("Keyboard broke");
     }
+
+    // tslint:disable-next-line
+    public dispose() {
+        
+    }
 }
