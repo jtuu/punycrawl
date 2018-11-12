@@ -14,11 +14,12 @@ export abstract class Actor extends Entity {
 
     constructor(
         game: Game,
+        name: string,
         sprite: keyof Spritesheet,
         maxHealth: number,
         controllerCtor: new (...args: ConstructorParameters<Controller>) => IController
     ) {
-        super(game, sprite, maxHealth);
+        super(game, name, sprite, maxHealth);
         this.controller = new controllerCtor(game, this);
     }
 

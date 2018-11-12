@@ -4,6 +4,7 @@ import { ClimbStairsAction } from "./actions/ClimbStairsAction";
 import { MoveAction } from "./actions/MoveAction";
 import { Actor } from "./Actor";
 import { ControllerKind, IController } from "./Controller";
+import { DungeonLevel } from "./DungeonLevel";
 import { Game } from "./Game";
 import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
 import { Keyboard } from "./Keyboard";
@@ -60,13 +61,19 @@ export class KeyboardController extends IController {
         const y = assertNotNull(this.actor.y);
         if (level.withinBounds(x, y)) {
             const terrain = level.terrainAt(x, y);
-            switch (terrain.climbDirection) {
-                case ClimbDirection.Up:
-                    if (level.previousLevel === null) { return null; }
-                    break;
-                case ClimbDirection.Down:
-                    if (level.nextLevel === null) { return null; }
-                    break;
+            if (terrain.climbDirection === ClimbDirection.None) {
+                this.game.logger.log("There's nothing to climb here.");
+                return null;
+            }
+            let destinationLevel: DungeonLevel | null = null;
+            if (terrain.climbDirection === ClimbDirection.Up) {
+                destinationLevel = level.previousLevel;
+            } else if (terrain.climbDirection === ClimbDirection.Down) {
+                destinationLevel = level.nextLevel;
+            }
+            if (destinationLevel === null) {
+                this.game.logger.log(`The ${terrain.name} appears to be blocked by something.`);
+                return null;
             }
             climb.direction = terrain.climbDirection;
             return climb;

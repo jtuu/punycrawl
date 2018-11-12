@@ -39,3 +39,22 @@ export function swap(arr: Array<any>, i: number, j: number) {
 }
 
 export function unused(..._args: any[]) {}
+
+export interface CssValue {
+    value: number;
+    unit: string;
+}
+
+const cssValuePattern = "^([0-9]+)([A-z]+)";
+
+export function parseCssValue(css?: string | null): CssValue | null {
+    if (!css) { return null; }
+    const regex = new RegExp(cssValuePattern);
+    const match = regex.exec(css);
+    if (isNotNull(match)) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        return { value, unit };
+    }
+    return null;
+}

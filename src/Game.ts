@@ -8,6 +8,7 @@ import { Visibility } from "./fov";
 import { Goblin } from "./Goblin";
 import { Human } from "./Human";
 import { Id, sortById } from "./Id";
+import { MessageLog } from "./MessageLog";
 import { SpriteManager } from "./SpriteManager";
 import { assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
 
@@ -104,6 +105,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
     private trackedActor: Actor | null;
     private readonly sprites: SpriteManager<Spritesheet> = new SpriteManager("spritesheet.gif", "spritesheet.json");
     private running: boolean = false;
+    public readonly logger: MessageLog = new MessageLog(document.body, 6);
     
     constructor() {
         super();
@@ -264,5 +266,6 @@ export class Game extends EventEmitter<GameEventTopicMap> {
             }
             if (!this.running) { break; }
         }
+        this.logger.log("You lose.");
     }
 }

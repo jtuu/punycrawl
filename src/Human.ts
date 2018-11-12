@@ -4,6 +4,6 @@ import { KeyboardController } from "./KeyboardController";
 
 export class Human extends Actor {
     constructor(game: Game) {
-        super(game, "human_male2", 100, KeyboardController);
+        super(game, "Human", "human_male2", 100, KeyboardController);
     }
 }

@@ -16,6 +16,7 @@ export abstract class Entity {
     
     constructor(
         public game: Game,
+        public name: string,
         public sprite: keyof Spritesheet,
         public readonly maxHealth: number
     ) {

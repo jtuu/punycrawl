@@ -7,3 +7,10 @@ html, body {
 canvas {
     position: absolute;
 }
+
+.message-log {
+    overflow-y: hidden;
+    color: white;
+    font-family: monospace;
+    font-size: 12pt;
+}
