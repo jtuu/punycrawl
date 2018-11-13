@@ -1,6 +1,7 @@
 import { Action } from "./actions/Action";
 import { ActionFactory } from "./actions/ActionFactory";
-import { Actor } from "./Actor";
+import { Location } from "./components/Location";
+import { Vision } from "./components/Vision";
 import { ControllerKind, IController } from "./Controller";
 import { Bind } from "./decorators";
 import { Entity } from "./Entity";
@@ -9,7 +10,7 @@ import { Game, GameEventTopic } from "./Game";
 import { distance, Vec2 } from "./geometry";
 import { Human } from "./Human";
 import { blindPath, drunkWalk } from "./pathfinding";
-import { assertNotNull, isNotNull } from "./utils";
+import { isNotNull } from "./utils";
 
 export class AIController extends IController {
     public readonly kind = ControllerKind.AI;
@@ -19,7 +20,7 @@ export class AIController extends IController {
     private wanderPath: IterableIterator<Vec2> | null = null;
     private wanderCounter: number = 0;
 
-    constructor(game: Game, actor: Actor) {
+    constructor(game: Game, actor: Entity) {
         super(game, actor);
         this.game.addEventListener(GameEventTopic.Death, this.onEntityDeath);
     }
@@ -32,24 +33,22 @@ export class AIController extends IController {
     }
 
     private findNewAttackTarget(): Entity | null {
-        const level = this.actor.dungeonLevel;
-        const fov = this.actor.fov;
-        if (isNotNull(level)) {
-            const x = assertNotNull(this.actor.x);
-            const y = assertNotNull(this.actor.y);
-            const r = this.actor.fovRadius;
-            for (let fx = 0; fx < fov.width; fx++) {
-                const col = fov.columns[fx];
-                for (let fy = 0; fy < fov.height; fy++) {
-                    const vis = col[fy] as Visibility;
-                    if (vis === Visibility.Visible) {
-                        const dx = x + fx - r;
-                        const dy = y + fy - r;
-                        const entities = level.entitiesAt(dx, dy);
-                        for (const entity of entities) {
-                            if (entity instanceof Human) {
-                                return entity;
-                            }
+        if (!this.actor.hasComponents(Location.Component, Vision.Component)) {
+            return null;
+        }
+        const {dungeonLevel: level, x, y} = this.actor.location;
+        const {fov, fovRadius: r} = this.actor.vision;
+        for (let fx = 0; fx < fov.width; fx++) {
+            const col = fov.columns[fx];
+            for (let fy = 0; fy < fov.height; fy++) {
+                const vis = col[fy] as Visibility;
+                if (vis === Visibility.Visible) {
+                    const dx = x + fx - r;
+                    const dy = y + fy - r;
+                    const entities = level.entitiesAt(dx, dy);
+                    for (const entity of entities) {
+                        if (entity instanceof Human) {
+                            return entity;
                         }
                     }
                 }
@@ -59,16 +58,20 @@ export class AIController extends IController {
     }
 
     private chaseEnemy(): Action | null {
-        const level = this.actor.dungeonLevel;
-        if (level === null) { return null; }
         if (this.attackTarget === null) {
             this.attackTarget = this.findNewAttackTarget();
         }
         const target = this.attackTarget;
         if (target === null) { return null; }
-        const x = assertNotNull(this.actor.x);
-        const y = assertNotNull(this.actor.y);
-        const dir = target.pathmap.getNextDirection(x, y);
+        if (!target.hasComponent(Location.Component)) {
+            return null;
+        }
+        if (!this.actor.hasComponents(Location.Component, Vision.Component)) {
+            return null;
+        }
+        const {dungeonLevel: level, x, y} = this.actor.location;
+        const {pathmap} = target.location;
+        const dir = pathmap.getNextDirection(x, y);
         if (dir === null) { return null; }
         const [dx, dy] = dir;
         const nx = x + dx;
@@ -77,10 +80,10 @@ export class AIController extends IController {
         if (distance(x, y, nx, ny) < 2 && level.entitiesAt(nx, ny).includes(target)) {
             return ActionFactory.createAttackAction(dx, dy);
         }
-        if (target.pathmap.reachesTarget) {
+        if (pathmap.reachesTarget) {
             // lose target if it's too far
-            const dist = target.pathmap.distanceAt(nx, ny);
-            if (dist > this.actor.fovRadius * 1.5) {
+            const dist = pathmap.distanceAt(nx, ny);
+            if (dist > this.actor.vision.fovRadius * 1.5) {
                 this.attackTarget = null;
                 return null;
             }
@@ -100,8 +103,10 @@ export class AIController extends IController {
     }
 
     private findNewWanderTarget(): Vec2 | null {
-        const level = this.actor.dungeonLevel;
-        if (level === null) { return null; }
+        if (!this.actor.hasComponent(Location.Component)) {
+            return null;
+        }
+        const level = this.actor.location.dungeonLevel;
         let x;
         let y;
         do {
@@ -112,12 +117,11 @@ export class AIController extends IController {
     }
 
     private wander(): Action | null {
-        const x = this.actor.x;
-        const y = this.actor.y;
-        if (x === null || y === null) { return null; }
+        if (!this.actor.hasComponent(Location.Component)) {
+            return null;
+        }
+        const {dungeonLevel: level, x, y} = this.actor.location;
         if (this.wanderPath === null) {
-            const level = this.actor.dungeonLevel;
-            if (level === null) { return null; }
             if (this.wanderTarget === null) {
                 this.wanderTarget = this.findNewWanderTarget();
             }

@@ -2,7 +2,7 @@ import { isNotNull, swap } from "./utils";
 
 export type Id = number;
 
-interface HasId {
+export interface HasId {
     id: Id;
 }
 

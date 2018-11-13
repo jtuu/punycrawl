@@ -2,15 +2,16 @@ import { Action, ActionKind } from "./actions/Action";
 import { ActionFactory } from "./actions/ActionFactory";
 import { ClimbStairsAction } from "./actions/ClimbStairsAction";
 import { MoveAction } from "./actions/MoveAction";
-import { Actor } from "./Actor";
+import { Location } from "./components/Location";
 import { ControllerKind, IController } from "./Controller";
 import { DungeonLevel } from "./DungeonLevel";
+import { Entity } from "./Entity";
 import { Game } from "./Game";
 import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
 import { Keyboard } from "./Keyboard";
 import { StrictMap } from "./StrictMap";
 import { ClimbDirection } from "./Terrain";
-import { assertNotNull, isNotNull } from "./utils";
+import { isNotNull } from "./utils";
 
 export class KeyboardController extends IController {
     public readonly kind = ControllerKind.Keyboard;
@@ -29,7 +30,7 @@ export class KeyboardController extends IController {
 
     constructor(
         game: Game,
-        actor: Actor
+        actor: Entity
     ) {
         super(game, actor);
     }
@@ -37,9 +38,12 @@ export class KeyboardController extends IController {
     private static readonly keyboard: Keyboard = new Keyboard();
 
     private transformMoveAction(move: MoveAction): Action | null {
-        const level = assertNotNull(this.actor.dungeonLevel);
-        const x = assertNotNull(this.actor.x) + move.dx;
-        const y = assertNotNull(this.actor.y) + move.dy;
+        if (!this.actor.hasComponent(Location.Component)) {
+            return null;
+        }
+        const level = this.actor.location.dungeonLevel;
+        const x = this.actor.location.x + move.dx;
+        const y = this.actor.location.y + move.dy;
         if (level.withinBounds(x, y)) {
             const terrain = level.terrainAt(x, y);
             if (terrain.blocksMovement) {
@@ -56,9 +60,10 @@ export class KeyboardController extends IController {
     }
 
     private transformClimbStairsAction(climb: ClimbStairsAction): Action | null {
-        const level = assertNotNull(this.actor.dungeonLevel);
-        const x = assertNotNull(this.actor.x);
-        const y = assertNotNull(this.actor.y);
+        if (!this.actor.hasComponent(Location.Component)) {
+            return null;
+        }
+        const {dungeonLevel: level, x, y} = this.actor.location;
         if (level.withinBounds(x, y)) {
             const terrain = level.terrainAt(x, y);
             if (terrain.climbDirection === ClimbDirection.None) {

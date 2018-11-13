@@ -1,4 +1,4 @@
-import { Actor } from "../Actor";
+import { Entity } from "../Entity";
 import { Game } from "../Game";
 import { AttackAction } from "./AttackAction";
 import { ClimbStairsAction } from "./ClimbStairsAction";
@@ -14,7 +14,7 @@ export enum ActionKind {
 
 export interface IAction {
     readonly kind: ActionKind;
-    execute(game: Game, actor: Actor): void;
+    execute(game: Game, actor: Entity): void;
 }
 
 export type Action = AttackAction | ClimbStairsAction | MoveAction | RestAction;

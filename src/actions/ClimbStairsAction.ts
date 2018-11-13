@@ -1,5 +1,6 @@
-import { Actor } from "../Actor";
+import { Location } from "../components/Location";
 import { DungeonLevel } from "../DungeonLevel";
+import { Entity } from "../Entity";
 import { Game } from "../Game";
 import { ClimbDirection } from "../Terrain";
 import { assertNotNull } from "../utils";
@@ -9,13 +10,11 @@ export class ClimbStairsAction implements IAction {
     public readonly kind = ActionKind.ClimbStairs;
     public direction: ClimbDirection = ClimbDirection.None;
 
-    public execute(game: Game, actor: Actor) {
+    public execute(game: Game, actor: Entity) {
         if (this.direction === ClimbDirection.None) {
             return;
         }
-        const x = assertNotNull(actor.x);
-        const y = assertNotNull(actor.y);
-        const curLevel = assertNotNull(actor.dungeonLevel);
+        const {location: {dungeonLevel: curLevel, x, y}} = actor.assertHasComponent(Location.Component);
         const terrain = curLevel.terrainAt(x, y);
         let targetLevel: DungeonLevel;
         let directionWord: string;

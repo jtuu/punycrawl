@@ -1,5 +1,5 @@
+import { Location } from "./components/Location";
 import { DungeonLevel } from "./DungeonLevel";
-import { Entity } from "./Entity";
 import { cardinalDirections, manhattanDistance, ordinalDirections, principalDirections, Vec2 } from "./geometry";
 import { Grid } from "./Grid";
 import { PriorityQueue } from "./PriorityQueue";
@@ -22,7 +22,7 @@ export class Pathmap extends Grid {
 
     constructor(
         width: number, height: number,
-        private readonly target: Entity
+        private readonly target: Location
     ) {
         super(width, height);
         this.map = new Uint8Array(width * height);

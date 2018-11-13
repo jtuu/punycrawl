@@ -1,4 +1,4 @@
-import { Actor } from "../Actor";
+import { Entity } from "../Entity";
 import { Game } from "../Game";
 import { ActionKind, IAction } from "./Action";
 
@@ -8,7 +8,7 @@ export interface RestAction extends IAction {
 
 export const RestAction: RestAction = {
     kind: ActionKind.Rest,
-    execute(_game: Game, _actor: Actor) {
+    execute(_game: Game, _actor: Entity) {
 
     }
 };

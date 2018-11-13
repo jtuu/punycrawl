@@ -1,10 +1,11 @@
 import { Array2d } from "./Array2d";
+import { Location } from "./components/Location";
 import { Entity } from "./Entity";
 import { getFieldOfView, updateFieldOfView } from "./fov";
 import { Grid } from "./Grid";
 import { removeById } from "./Id";
 import { Terrain, TerrainKind } from "./Terrain";
-import { isDefined, isNotNull } from "./utils";
+import { isDefined } from "./utils";
 
 export class DungeonLevel extends Grid {
     private readonly terrainMap: Array2d;
@@ -38,9 +39,9 @@ export class DungeonLevel extends Grid {
         this.entityMap = new Array(width * height);
     }
 
-    private putEntityWithin(entity: Entity, x: number, y: number) {
-        entity.x = x;
-        entity.y = y;
+    private putEntityWithin(entity: Entity & typeof Location.Component.prototype, x: number, y: number) {
+        entity.location.x = x;
+        entity.location.y = y;
         const idx = this.index(x, y);
         const entities = this.entityMap[idx];
         if (isDefined(entities)) {
@@ -51,14 +52,15 @@ export class DungeonLevel extends Grid {
     }
 
     public putEntity(entity: Entity, x: number, y: number) {
-        entity.dungeonLevel = this;
-        this.entities_.push(entity);
-        this.putEntityWithin(entity, x, y);
+        if (entity.addComponent(new Location.Component(entity, x, y, this))) {
+            this.entities_.push(entity);
+            this.putEntityWithin(entity, x, y);
+        }
     }
 
     private removeEntityWithin(entity: Entity): boolean {
-        const {x, y} = entity;
-        if (isNotNull(x) && isNotNull(y)) {
+        if (entity.hasComponent(Location.Component)) {
+            const {x, y} = entity.location;
             const idx = this.index(x, y);
             const entities = this.entityMap[idx];
             if (isDefined(entities) && removeById(entities, entity.id)) {
@@ -67,21 +69,19 @@ export class DungeonLevel extends Grid {
                 }
                 return true;
             }
-            entity.x = null;
-            entity.y = null;
         }
         return false;
     }
 
     public removeEntity(entity: Entity): boolean {
         if (removeById(this.entities_, entity.id) && this.removeEntityWithin(entity)) {
-            entity.dungeonLevel = null;
+            entity.removeComponent(Location.Component);
             return true;
         }
         return false;
     }
 
-    public moveEntityWithin(entity: Entity, tox: number, toy: number): boolean {
+    public moveEntityWithin(entity: Entity & typeof Location.Component.prototype, tox: number, toy: number): boolean {
         if (this.removeEntityWithin(entity)) {
             this.putEntityWithin(entity, tox, toy);
             return true;

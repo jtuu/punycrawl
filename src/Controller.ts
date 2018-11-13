@@ -1,6 +1,6 @@
 import { Action } from "./actions/Action";
-import { Actor } from "./Actor";
 import { AIController } from "./AIController";
+import { Entity } from "./Entity";
 import { Game } from "./Game";
 import { KeyboardController } from "./KeyboardController";
 
@@ -14,7 +14,7 @@ export abstract class IController {
 
     constructor(
         protected readonly game: Game,
-        protected readonly actor: Actor
+        protected readonly actor: Entity
     ) {}
 
     public abstract async getAction(): Promise<Action>;

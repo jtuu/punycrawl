@@ -1,5 +1,10 @@
 import { ActionKind } from "./actions/Action";
-import { Actor } from "./Actor";
+import { filterEntities } from "./components/Component";
+import { Controlled } from "./components/Controlled";
+import { Damageable } from "./components/Damageable";
+import { Location } from "./components/Location";
+import { Renderable } from "./components/Renderable";
+import { Vision } from "./components/Vision";
 import { Bind } from "./decorators";
 import { DungeonLevel } from "./DungeonLevel";
 import { Entity } from "./Entity";
@@ -10,7 +15,7 @@ import { Human } from "./Human";
 import { Id, sortById } from "./Id";
 import { MessageLog } from "./MessageLog";
 import { SpriteManager } from "./SpriteManager";
-import { assertNotNull, filterInstanceOf, isDefined, isNotNull } from "./utils";
+import { assertNotNull, isDefined, isNotNull } from "./utils";
 
 const TilePixelSize = 32;
 // size in tiles, should be odd so that the camera can be centered properly
@@ -21,6 +26,7 @@ const HalfViewH = (ViewHeight - 1) / 2;
 const HpBarHeight = 3;
 const HpBarOffset = TilePixelSize - HpBarHeight;
 
+type Actor = Entity & typeof Controlled.Component.prototype;
 type ActorDispenserResult = Actor | null;
 class ActorDispenser implements IterableIterator<ActorDispenserResult> {
     private readonly actors: Array<Actor> = [];
@@ -102,7 +108,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
     private readonly actors: ActorDispenser = new ActorDispenser();
     private cameraX: number = 0;
     private cameraY: number = 0;
-    private trackedActor: Actor | null;
+    private trackedEntity: Entity | null;
     private readonly sprites: SpriteManager<Spritesheet> = new SpriteManager("spritesheet.gif", "spritesheet.json");
     private running: boolean = false;
     public readonly logger: MessageLog = new MessageLog(document.body, 6);
@@ -135,7 +141,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
             this.currentLevel.putEntity(new Goblin(this), 8, 5 + i * 2);
             this.currentLevel.putEntity(new Goblin(this), 9, 10 + i * 2);
         }
-        this.trackedActor = player;
+        this.trackedEntity = player;
         this.updateCamera();
         for (let i = 0; i < 10; i++) {
             this.appendFloor();
@@ -147,16 +153,16 @@ export class Game extends EventEmitter<GameEventTopicMap> {
     @Bind
     private onEntityDeath(entity: Entity) {
         this.syncActors();
-        if (entity === this.trackedActor) {
-            this.trackedActor = null;
+        if (entity === this.trackedEntity) {
+            this.trackedEntity = null;
             this.running = false;
         }
     }
 
     private updateCamera() {
-        if (isNotNull(this.trackedActor)) {
-            this.cameraX = assertNotNull(this.trackedActor.x);
-            this.cameraY = assertNotNull(this.trackedActor.y);
+        if (isNotNull(this.trackedEntity) && this.trackedEntity.hasComponent(Location.Component)) {
+            this.cameraX = this.trackedEntity.location.x;
+            this.cameraY = this.trackedEntity.location.y;
             this.memoryCanvas.style.left = `${(-this.cameraX + HalfViewW) * TilePixelSize}px`;
             this.memoryCanvas.style.top = `${(-this.cameraY + HalfViewH) * TilePixelSize}px`;
         }
@@ -180,14 +186,13 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         const prev = this.currentLevel.previousLevel;
         const next = this.currentLevel.nextLevel;
         if (isNotNull(prev)) {
-            this.actors.add(filterInstanceOf(prev.entities, Actor));
+            this.actors.add(filterEntities(prev.entities, Controlled.Component));
         }
         if (isNotNull(next)) {
-            this.actors.add(filterInstanceOf(next.entities, Actor));
+            this.actors.add(filterEntities(next.entities, Controlled.Component));
         }
-        this.actors.add(filterInstanceOf(this.currentLevel.entities, Actor));
+        this.actors.add(filterEntities(this.currentLevel.entities, Controlled.Component));
         this.actors.sync();
-
     }
     
     private drawView(ctx: CanvasRenderingContext2D) {
@@ -195,14 +200,15 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         const offsetX = this.cameraX - HalfViewW;
         const offsetY = this.cameraY - HalfViewH;
 
-        const actor = this.trackedActor;
-        if (actor === null) { return; }
-        const fov = actor.fov;
-        if (fov === null) { return; }
+        const tracked = this.trackedEntity;
+        if (tracked === null || !tracked.hasComponent(Vision.Component)) {
+            return;
+        }
+        const {fov, fovRadius} = tracked.vision;
 
-        for (let fx = 0, x = this.cameraX - actor.fovRadius; fx < fov.width; fx++, x++) {
+        for (let fx = 0, x = this.cameraX - fovRadius; fx < fov.width; fx++, x++) {
             const col = fov.columns[fx];
-            for (let fy = 0, y = this.cameraY - actor.fovRadius; fy < fov.height; fy++, y++) {
+            for (let fy = 0, y = this.cameraY - fovRadius; fy < fov.height; fy++, y++) {
                 const vis = col[fy] as Visibility;
                 if (vis === Visibility.Visible) {
                     const level = this.currentLevel;
@@ -219,13 +225,17 @@ export class Game extends EventEmitter<GameEventTopicMap> {
 
                         const entities = level.entitiesAt(x, y);
                         for (const entity of entities) {
-                            this.sprites.draw(ctx, entity.sprite, xpx, ypx);
-                            const hpPercent = Math.max(entity.health / entity.maxHealth, 0);
-                            const barWidth = Math.floor(TilePixelSize * hpPercent);
-                            ctx.fillStyle = "green";
-                            ctx.fillRect(xpx, ypx + HpBarOffset, barWidth, HpBarHeight);
-                            ctx.fillStyle = "red";
-                            ctx.fillRect(xpx + barWidth, ypx + HpBarOffset, TilePixelSize - barWidth, HpBarHeight);
+                            if (entity.hasComponent(Renderable.Component)) {
+                                this.sprites.draw(ctx, entity.renderable.sprite, xpx, ypx);
+                                if (entity.hasComponent(Damageable.Component)) {
+                                    const hpPercent = Math.max(entity.damageable.health / entity.damageable.maxHealth, 0);
+                                    const barWidth = Math.floor(TilePixelSize * hpPercent);
+                                    ctx.fillStyle = "green";
+                                    ctx.fillRect(xpx, ypx + HpBarOffset, barWidth, HpBarHeight);
+                                    ctx.fillStyle = "red";
+                                    ctx.fillRect(xpx + barWidth, ypx + HpBarOffset, TilePixelSize - barWidth, HpBarHeight);
+                                }
+                            }
                         }
                     }
                 }
@@ -246,14 +256,21 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         this.syncActors();
         for (const actor_ of this.actors) {
             const actor = assertNotNull(actor_);
-            const action = await actor.act();
-            actor.invalidatePathmapCache();
-            actor.invalidateFovCache();
-            if (actor === this.trackedActor) {
+            const action = await actor.controlled.controller.getAction();
+            action.execute(this, actor);
+            let location: Location | null = null;
+            if (actor.hasComponent(Location.Component)) {
+                actor.location.invalidatePathmapCache();
+                location = actor.location;
+            }
+            if (actor.hasComponent(Vision.Component)) {
+                actor.vision.invalidateFovCache();
+            }
+            if (actor === this.trackedEntity) {
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:
                         this.memoryCtx.clearRect(0, 0, this.memoryCanvas.width, this.memoryCanvas.height);
-                        this.currentLevel = assertNotNull(actor.dungeonLevel);
+                        this.currentLevel = assertNotNull(location).dungeonLevel;
                     case ActionKind.Move:
                         this.updateCamera();
                         break;
