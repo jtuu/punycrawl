@@ -1,7 +1,7 @@
 import { Array2d } from "./Array2d";
 import { Location } from "./components/Location";
 import { Entity } from "./Entity";
-import { getFieldOfView, updateFieldOfView } from "./fov";
+import { getFieldOfView, lineOfSight, updateFieldOfView } from "./fov";
 import { Grid } from "./Grid";
 import { removeById } from "./Id";
 import { Terrain, TerrainKind } from "./Terrain";
@@ -9,7 +9,7 @@ import { isDefined } from "./utils";
 
 export class DungeonLevel extends Grid {
     private readonly terrainMap: Array2d;
-    private readonly entityMap: Array<Array<Entity> | undefined>;
+    private readonly entityMap: Array<Array<Entity & typeof Location.Component.prototype> | undefined>;
     private readonly entities_: Array<Entity> = [];
     public previousLevel: DungeonLevel | null = null;
     public nextLevel: DungeonLevel | null = null;
@@ -89,7 +89,7 @@ export class DungeonLevel extends Grid {
         return false;
     }
 
-    public entitiesAt(x: number, y: number): Array<Entity> {
+    public entitiesAt(x: number, y: number): Array<Entity & typeof Location.Component.prototype> {
         const entities = this.entityMap[this.index(x, y)];
         if (isDefined(entities)) {
             return entities.slice();
@@ -112,5 +112,9 @@ export class DungeonLevel extends Grid {
 
     public updateFieldOfViewAt(fov: Array2d, x: number, y: number, r: number) {
         updateFieldOfView(this.terrainMap, fov, x, y, r);
+    }
+
+    public lineOfSight(fromx: number, fromy: number, tox: number, toy: number): boolean {
+        return lineOfSight(this.terrainMap, fromx, fromy, tox, toy);
     }
 }

@@ -67,7 +67,7 @@ export class KeyboardController extends IController {
         if (level.withinBounds(x, y)) {
             const terrain = level.terrainAt(x, y);
             if (terrain.climbDirection === ClimbDirection.None) {
-                this.game.logger.log("There's nothing to climb here.");
+                this.game.logger.logGlobal("There's nothing to climb here.");
                 return null;
             }
             let destinationLevel: DungeonLevel | null = null;
@@ -77,7 +77,7 @@ export class KeyboardController extends IController {
                 destinationLevel = level.nextLevel;
             }
             if (destinationLevel === null) {
-                this.game.logger.log(`The ${terrain.name} appears to be blocked by something.`);
+                this.game.logger.logGlobal(`The ${terrain.name} appears to be blocked by something.`);
                 return null;
             }
             climb.direction = terrain.climbDirection;

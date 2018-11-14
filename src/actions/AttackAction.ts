@@ -22,9 +22,9 @@ export class AttackAction implements IAction {
             if (entity.hasComponent(Damageable.Component)) {
                 const dmg = 1;
                 entity.damageable.takeDamage(dmg);
-                game.logger.log(`The ${actor.name} hits the ${entity.name} for ${dmg} damage.`);
+                game.logger.logLocal(entity.location, `The ${actor.name} hits the ${entity.name} for ${dmg} damage.`);
                 if (!entity.damageable.alive) {
-                    game.logger.log(`${actor.name} kills ${entity.name}.`);
+                    game.logger.logLocal(entity.location, `${actor.name} kills ${entity.name}.`);
                 }
             }
         }

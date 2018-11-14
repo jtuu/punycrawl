@@ -108,10 +108,10 @@ export class Game extends EventEmitter<GameEventTopicMap> {
     private readonly actors: ActorDispenser = new ActorDispenser();
     private cameraX: number = 0;
     private cameraY: number = 0;
-    private trackedEntity: Entity | null;
+    private trackedEntity_: Entity | null;
     private readonly sprites: SpriteManager<Spritesheet> = new SpriteManager("spritesheet.gif", "spritesheet.json");
     private running: boolean = false;
-    public readonly logger: MessageLog = new MessageLog(document.body, 6);
+    public readonly logger: MessageLog = new MessageLog(this, document.body, 6);
     
     constructor() {
         super();
@@ -141,7 +141,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
             this.currentLevel.putEntity(new Goblin(this), 8, 5 + i * 2);
             this.currentLevel.putEntity(new Goblin(this), 9, 10 + i * 2);
         }
-        this.trackedEntity = player;
+        this.trackedEntity_ = player;
         this.updateCamera();
         for (let i = 0; i < 10; i++) {
             this.appendFloor();
@@ -150,19 +150,23 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         this.addEventListener(GameEventTopic.Death, this.onEntityDeath);
     }
 
+    public get trackedEntity(): Entity | null {
+        return this.trackedEntity_;
+    }
+
     @Bind
     private onEntityDeath(entity: Entity) {
         this.syncActors();
-        if (entity === this.trackedEntity) {
-            this.trackedEntity = null;
+        if (entity === this.trackedEntity_) {
+            this.trackedEntity_ = null;
             this.running = false;
         }
     }
 
     private updateCamera() {
-        if (isNotNull(this.trackedEntity) && this.trackedEntity.hasComponent(Location.Component)) {
-            this.cameraX = this.trackedEntity.location.x;
-            this.cameraY = this.trackedEntity.location.y;
+        if (isNotNull(this.trackedEntity_) && this.trackedEntity_.hasComponent(Location.Component)) {
+            this.cameraX = this.trackedEntity_.location.x;
+            this.cameraY = this.trackedEntity_.location.y;
             this.memoryCanvas.style.left = `${(-this.cameraX + HalfViewW) * TilePixelSize}px`;
             this.memoryCanvas.style.top = `${(-this.cameraY + HalfViewH) * TilePixelSize}px`;
         }
@@ -200,7 +204,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         const offsetX = this.cameraX - HalfViewW;
         const offsetY = this.cameraY - HalfViewH;
 
-        const tracked = this.trackedEntity;
+        const tracked = this.trackedEntity_;
         if (tracked === null || !tracked.hasComponent(Vision.Component)) {
             return;
         }
@@ -266,7 +270,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
             if (actor.hasComponent(Vision.Component)) {
                 actor.vision.invalidateFovCache();
             }
-            if (actor === this.trackedEntity) {
+            if (actor === this.trackedEntity_) {
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:
                         this.memoryCtx.clearRect(0, 0, this.memoryCanvas.width, this.memoryCanvas.height);
@@ -283,6 +287,6 @@ export class Game extends EventEmitter<GameEventTopicMap> {
             }
             if (!this.running) { break; }
         }
-        this.logger.log("You lose.");
+        this.logger.logGlobal("You lose.");
     }
 }

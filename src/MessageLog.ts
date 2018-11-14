@@ -1,3 +1,6 @@
+import { Location } from "./components/Location";
+import { Vision } from "./components/Vision";
+import { Game } from "./Game";
 import { assertNotNull, CssValue, isNotNull, parseCssValue } from "./utils";
 
 export class MessageLog {
@@ -8,7 +11,7 @@ export class MessageLog {
     private readonly lineHeight: CssValue;
     private numLines_: number;
 
-    constructor(parent: HTMLElement, numLines: number) {
+    constructor(private readonly game: Game, parent: HTMLElement, numLines: number) {
         this.container.className = MessageLog.containerClassName;
         parent.appendChild(this.container);
         const containerLineHeight = parseCssValue(this.container.style.lineHeight);
@@ -32,7 +35,7 @@ export class MessageLog {
         return this.messages.slice(-this.numLines_);
     }
 
-    public log(text: string) {
+    private log(text: string) {
         this.messages.push(text);
         const msg = MessageLog.createMessage(text);
         const first = this.container.firstChild;
@@ -40,6 +43,24 @@ export class MessageLog {
             this.container.removeChild(first);
         }
         this.container.appendChild(msg);
+    }
+
+    public logGlobal(text: string) {
+        this.log(text);
+    }
+
+    public logLocal(eventLoc: Location, text: string) {
+        if (
+            isNotNull(this.game.trackedEntity) &&
+            (eventLoc.owner === this.game.trackedEntity || (
+                this.game.trackedEntity.hasComponent(Location.Component) &&
+                this.game.trackedEntity.location.dungeonLevel === eventLoc.dungeonLevel &&
+                this.game.trackedEntity.hasComponent(Vision.Component) &&
+                this.game.trackedEntity.vision.canSee(eventLoc.x, eventLoc.y)
+            ))
+        ) { 
+            this.log(text);
+        }
     }
 
     private updateHeight() {

@@ -14,7 +14,8 @@ export class ClimbStairsAction implements IAction {
         if (this.direction === ClimbDirection.None) {
             return;
         }
-        const {location: {dungeonLevel: curLevel, x, y}} = actor.assertHasComponent(Location.Component);
+        const {location} = actor.assertHasComponent(Location.Component);
+        const {dungeonLevel: curLevel, x, y} = location;
         const terrain = curLevel.terrainAt(x, y);
         let targetLevel: DungeonLevel;
         let directionWord: string;
@@ -27,6 +28,6 @@ export class ClimbStairsAction implements IAction {
         }
         curLevel.removeEntity(actor);
         targetLevel.putEntity(actor, x, y);
-        game.logger.log(`The ${actor.name} goes ${directionWord} the ${terrain.name}.`);
+        game.logger.logLocal(location, `The ${actor.name} goes ${directionWord} the ${terrain.name}.`);
     }
 }
