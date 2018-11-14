@@ -14,7 +14,7 @@ $(OUTDIR)/digital-fov.wasm: $(OUTDIR)/digital-fov.js
 
 wasm: $(OUTDIR) $(OUTDIR)/digital-fov.wasm
 
-$(OUTDIR)/%.js: $(wildcard src/*.ts)
+$(OUTDIR)/%.js: $(wildcard src/*.ts) $(wildcard src/*/*.ts)
 	$(TSC) --build src/tsconfig.json
 
 fix_module_names:
