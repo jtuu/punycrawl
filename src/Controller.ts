@@ -1,6 +1,6 @@
 import { Action } from "./actions/Action";
 import { AIController } from "./AIController";
-import { Entity } from "./Entity";
+import { Entity } from "./entities/Entity";
 import { Game } from "./Game";
 import { KeyboardController } from "./KeyboardController";
 

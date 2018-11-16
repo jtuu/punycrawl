@@ -1,4 +1,4 @@
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { GameEventTopic } from "../Game";
 import { Component, ComponentData } from "./Component";
 import { Location } from "./Location";

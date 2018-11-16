@@ -1,6 +1,7 @@
 import { Array2d } from "./Array2d";
 import { Location } from "./components/Location";
-import { Entity } from "./Entity";
+import { Physical } from "./components/Physical";
+import { Entity } from "./entities/Entity";
 import { getFieldOfView, lineOfSight, updateFieldOfView } from "./fov";
 import { Grid } from "./Grid";
 import { removeById } from "./Id";
@@ -116,5 +117,21 @@ export class DungeonLevel extends Grid {
 
     public lineOfSight(fromx: number, fromy: number, tox: number, toy: number): boolean {
         return lineOfSight(this.terrainMap, fromx, fromy, tox, toy);
+    }
+
+    public travelable(x: number, y: number) {
+        if (!Terrain[this.terrainMap.columns[x][y] as TerrainKind].blocksMovement) {
+            const idx = this.index(x, y);
+            const entities = this.entityMap[idx];
+            if (isDefined(entities)) {
+                for (const entity of entities) {
+                    if (entity.hasComponent(Physical.Component) && entity.physical.blocksMovement) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

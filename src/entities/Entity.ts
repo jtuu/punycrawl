@@ -1,6 +1,6 @@
-import { Component } from "./components/Component";
-import { Game } from "./Game";
-import { HasId, Id } from "./Id";
+import { Component } from "../components/Component";
+import { Game } from "../Game";
+import { HasId, Id } from "../Id";
 
 export abstract class Entity implements HasId {
     private static idCounter: number = 0;

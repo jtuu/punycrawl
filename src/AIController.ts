@@ -4,11 +4,11 @@ import { Location } from "./components/Location";
 import { Vision } from "./components/Vision";
 import { ControllerKind, IController } from "./Controller";
 import { Bind } from "./decorators";
-import { Entity } from "./Entity";
+import { Entity } from "./entities/Entity";
+import { Human } from "./entities/Human";
 import { Visibility } from "./fov";
 import { Game, GameEventTopic } from "./Game";
 import { distance, Vec2 } from "./geometry";
-import { Human } from "./Human";
 import { blindPath, drunkWalk } from "./pathfinding";
 import { isNotNull } from "./utils";
 

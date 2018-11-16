@@ -1,5 +1,5 @@
 import { Array2d } from "../Array2d";
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Visibility } from "../fov";
 import { isNotNull } from "../utils";
 import { Component, ComponentData } from "./Component";

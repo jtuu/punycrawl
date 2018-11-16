@@ -1,6 +1,6 @@
 import { Location } from "../components/Location";
 import { DungeonLevel } from "../DungeonLevel";
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Game } from "../Game";
 import { ClimbDirection } from "../Terrain";
 import { assertNotNull } from "../utils";

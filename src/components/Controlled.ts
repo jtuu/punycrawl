@@ -1,5 +1,5 @@
 import { Controller, IController } from "../Controller";
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Component, ComponentData } from "./Component";
 
 class ControlledComponent extends Component {

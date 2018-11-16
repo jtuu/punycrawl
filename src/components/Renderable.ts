@@ -1,4 +1,4 @@
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Component, ComponentData } from "./Component";
 
 class RenderableComponent extends Component {

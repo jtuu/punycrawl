@@ -7,11 +7,12 @@ import { Renderable } from "./components/Renderable";
 import { Vision } from "./components/Vision";
 import { Bind } from "./decorators";
 import { DungeonLevel } from "./DungeonLevel";
-import { Entity } from "./Entity";
+import { Entity } from "./entities/Entity";
+import { Goblin } from "./entities/Goblin";
+import { Human } from "./entities/Human";
+import { Trinket } from "./entities/Item";
 import { EventEmitter } from "./EventEmitter";
 import { Visibility } from "./fov";
-import { Goblin } from "./Goblin";
-import { Human } from "./Human";
 import { Id, sortById } from "./Id";
 import { MessageLog } from "./MessageLog";
 import { SpriteManager } from "./SpriteManager";
@@ -136,6 +137,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         this.currentLevel = this.appendFloor();
         const player = new Human(this);
         this.currentLevel.putEntity(player, 1, 1);
+        this.currentLevel.putEntity(new Trinket(this), 2, 4);
         for (let i = 0; i < 10; i++) {
             this.currentLevel.putEntity(new Goblin(this), 7, i * 2);
             this.currentLevel.putEntity(new Goblin(this), 8, 5 + i * 2);

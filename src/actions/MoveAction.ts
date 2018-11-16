@@ -1,5 +1,5 @@
 import { Location } from "../components/Location";
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Game } from "../Game";
 import { assertNotNull } from "../utils";
 import { ActionKind, IAction } from "./Action";

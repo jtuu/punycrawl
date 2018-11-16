@@ -2,10 +2,14 @@ import { Action, ActionKind } from "./actions/Action";
 import { ActionFactory } from "./actions/ActionFactory";
 import { ClimbStairsAction } from "./actions/ClimbStairsAction";
 import { MoveAction } from "./actions/MoveAction";
+import { PickupAction } from "./actions/PickupAction";
+import { Damageable } from "./components/Damageable";
 import { Location } from "./components/Location";
+import { Physical } from "./components/Physical";
+import { Storage } from "./components/Storage";
 import { ControllerKind, IController } from "./Controller";
 import { DungeonLevel } from "./DungeonLevel";
-import { Entity } from "./Entity";
+import { Entity } from "./entities/Entity";
 import { Game } from "./Game";
 import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
 import { Keyboard } from "./Keyboard";
@@ -25,7 +29,8 @@ export class KeyboardController extends IController {
         ["Numpad7", ActionFactory.createMoveAction(...NW)],
         ["Numpad8", ActionFactory.createMoveAction(...N)],
         ["Numpad9", ActionFactory.createMoveAction(...NE)],
-        ["IntlBackslash", ActionFactory.createClimbStairsAction()]
+        ["IntlBackslash", ActionFactory.createClimbStairsAction()],
+        ["KeyG", ActionFactory.createPickupAction()]
     ] as Array<[string, Action]>);
 
     constructor(
@@ -53,8 +58,22 @@ export class KeyboardController extends IController {
             return null;
         }
         const entities = level.entitiesAt(x, y);
-        for (const _entity of entities) {
+        let blocksMovement = false;
+        let damageable = false;
+        for (const entity of entities) {
+            if (entity.hasComponent(Physical.Component) && entity.physical.blocksMovement) {
+                blocksMovement = true;
+            }
+            if (entity.hasComponent(Damageable.Component)) {
+                damageable = true;
+                break;
+            }
+        }
+        if (damageable) {
             return ActionFactory.createAttackAction(move.dx, move.dy);
+        }
+        if (blocksMovement) {
+            return null;
         }
         return move;
     }
@@ -86,12 +105,35 @@ export class KeyboardController extends IController {
         return null;
     }
 
+    private transformPickupAction(pickup: PickupAction): Action | null {
+        if (!this.actor.hasComponents(Location.Component, Storage.Component)) {
+            return null;
+        }
+        if (this.actor.storage.isFull()) {
+            this.game.logger.logGlobal("Your inventory is full.");
+            return null;
+        }
+        const {dungeonLevel, x, y} = this.actor.location;
+        // pick up first thing we find
+        for (const entity of dungeonLevel.entitiesAt(x, y)) {
+            // but don't pick up yourself
+            if (entity !== this.actor) {
+                pickup.targetId = entity.id;
+                return pickup;
+            }
+        }
+        this.game.logger.logGlobal("There's nothing to pick up here.");
+        return null;
+    }
+
     private transformAction(action: Action): Action | null {
         switch (action.kind) {
             case ActionKind.Move:
                 return this.transformMoveAction(action);
             case ActionKind.ClimbStairs:
                 return this.transformClimbStairsAction(action);
+            case ActionKind.Pickup:
+                return this.transformPickupAction(action);
         }
         return action;
     }
@@ -104,6 +146,8 @@ export class KeyboardController extends IController {
                 if (isNotNull(action)) {
                     return action;
                 }
+            } else if (keyPress.code === "KeyI") {
+                console.log((this.actor as any).storage.contents);
             }
         }
         throw new Error("Keyboard broke");

@@ -1,5 +1,5 @@
 import { DungeonLevel } from "../DungeonLevel";
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Pathmap } from "../pathfinding";
 import { Component, ComponentData } from "./Component";
 

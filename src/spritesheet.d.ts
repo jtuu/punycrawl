@@ -5,6 +5,7 @@ declare type Spritesheet = {
   human_male2: Sprite;
   puny8x10: Sprite;
   goblin: Sprite;
+  trinket: Sprite;
 };
 
 declare type Sprite = {

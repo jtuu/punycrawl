@@ -7,13 +7,6 @@ import { Queue } from "./Queue";
 import { assertDefined, assertNotNull } from "./utils";
 import { Vec2HashMap } from "./Vec2HashMap";
 
-function travelable(level: DungeonLevel, x: number, y: number): boolean {
-    if (!level.terrainAt(x, y).blocksMovement && level.entitiesAt(x, y).length === 0) {
-        return true;
-    }
-    return false;
-}
-
 export class Pathmap extends Grid {
     private static readonly defaultValue: number = 255;
     private static readonly biasedDirections = ordinalDirections.concat(cardinalDirections, [0, 0]);
@@ -53,7 +46,7 @@ export class Pathmap extends Grid {
                 if (nx === tx && ny === ty) {
                     this.reachesTarget_ = true;
                     this.map[this.index(nx, ny)] = 0;
-                } else if (this.withinBounds(nx, ny) && travelable(level, nx, ny)) {
+                } else if (this.withinBounds(nx, ny) && level.travelable(nx, ny)) {
                     const nextIdx = this.index(nx, ny);
                     const nextVal = this.map[nextIdx];
                     if (nextVal === Pathmap.defaultValue) {
@@ -80,7 +73,7 @@ export class Pathmap extends Grid {
                 return dir;
             } else if (this.withinBounds(dx, dy)) {
                 const val = this.map[this.index(dx, dy)];
-                if (val <= bestVal && travelable(level, dx, dy)) {
+                if (val <= bestVal && level.travelable(dx, dy)) {
                     bestVal = val;
                     bestDir = dir;
                 }
@@ -124,7 +117,7 @@ function aStar(level: DungeonLevel, fromx: number, fromy: number, tox: number, t
         for (const nextDir of principalDirections) {
             const nx = curx + nextDir[0];
             const ny = cury + nextDir[1];
-            if (level.withinBounds(nx, ny) && travelable(level, nx, ny)) {
+            if (level.withinBounds(nx, ny) && level.travelable(nx, ny)) {
                 const next: Vec2 = [nx, ny];
                 if (!costs.has(next) || newCost < assertDefined(costs.get(next))) {
                     costs.set(next, newCost);
@@ -149,14 +142,14 @@ export function* blindPath(level: DungeonLevel, fromx: number, fromy: number, to
         const last = path[path.length - 1];
         const reachesTarget = path.length > 0 && last[0] === tox && last[1] === toy;
         // standing next to target but it's blocked
-        if (reachesTarget && path.length === 1 && !travelable(level, tox, toy)) {
+        if (reachesTarget && path.length === 1 && !level.travelable(tox, toy)) {
             break;
         }
         // go through the path even if it doesn't reach target
         for (const next of path) {
             const [nx, ny] = next;
             // bumped, recalculate
-            if (!travelable(level, nx, ny)) { break; }
+            if (!level.travelable(nx, ny)) { break; }
             curx = nx;
             cury = ny;
             yield next;
@@ -174,7 +167,7 @@ export function drunkWalk(level: DungeonLevel, fromx: number, fromy: number): Ve
         const dir = principalDirections[i];
         const dx = fromx + dir[0];
         const dy = fromy + dir[1];
-        if (level.withinBounds(dx, dy) && travelable(level, dx, dy)) {
+        if (level.withinBounds(dx, dy) && level.travelable(dx, dy)) {
             return dir;
         }
         if (++i >= numDir) {

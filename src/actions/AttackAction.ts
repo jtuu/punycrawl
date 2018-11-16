@@ -1,6 +1,6 @@
 import { Damageable } from "../components/Damageable";
 import { Location } from "../components/Location";
-import { Entity } from "../Entity";
+import { Entity } from "../entities/Entity";
 import { Game } from "../Game";
 import { ActionKind, IAction } from "./Action";
 

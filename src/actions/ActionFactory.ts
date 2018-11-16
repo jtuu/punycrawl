@@ -1,6 +1,7 @@
 import { AttackAction } from "./AttackAction";
 import { ClimbStairsAction } from "./ClimbStairsAction";
 import { MoveAction } from "./MoveAction";
+import { PickupAction } from "./PickupAction";
 import { RestAction } from "./RestAction";
 
 export class ActionFactory {
@@ -18,5 +19,9 @@ export class ActionFactory {
 
     public static createClimbStairsAction(): ClimbStairsAction {
         return new ClimbStairsAction();
+    }
+
+    public static createPickupAction(): PickupAction {
+        return new PickupAction();
     }
 }
