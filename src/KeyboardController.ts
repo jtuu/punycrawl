@@ -13,13 +13,25 @@ import { Entity } from "./entities/Entity";
 import { Game } from "./Game";
 import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
 import { Keyboard } from "./Keyboard";
+import { Menu, StorageMenu } from "./Menu";
 import { StrictMap } from "./StrictMap";
 import { ClimbDirection } from "./Terrain";
 import { isNotNull } from "./utils";
 
+enum ControlsMode {
+    Game,
+    UI
+}
+
+enum UIAction {
+    OpenInventory,
+    CloseMenu
+}
+
 export class KeyboardController extends IController {
     public readonly kind = ControllerKind.Keyboard;
-    private static readonly controls: StrictMap<string, Action> = new StrictMap([
+    private static readonly keyboard: Keyboard = new Keyboard();
+    private static readonly gameControls: StrictMap<string, Action> = new StrictMap([
         ["Numpad1", ActionFactory.createMoveAction(...SW)],
         ["Numpad2", ActionFactory.createMoveAction(...S)],
         ["Numpad3", ActionFactory.createMoveAction(...SE)],
@@ -32,6 +44,12 @@ export class KeyboardController extends IController {
         ["IntlBackslash", ActionFactory.createClimbStairsAction()],
         ["KeyG", ActionFactory.createPickupAction()]
     ] as Array<[string, Action]>);
+    private static readonly uiControls: StrictMap<string, UIAction> = new StrictMap([
+        ["KeyI", UIAction.OpenInventory],
+        ["Escape", UIAction.CloseMenu]
+    ]);
+    private menu: Menu | null = null;
+    private mode: ControlsMode = ControlsMode.Game;
 
     constructor(
         game: Game,
@@ -39,8 +57,6 @@ export class KeyboardController extends IController {
     ) {
         super(game, actor);
     }
-
-    private static readonly keyboard: Keyboard = new Keyboard();
 
     private transformMoveAction(move: MoveAction): Action | null {
         if (!this.actor.hasComponent(Location.Component)) {
@@ -138,16 +154,57 @@ export class KeyboardController extends IController {
         return action;
     }
 
+    private closeMenu() {
+        if (isNotNull(this.menu)) {
+            this.mode = ControlsMode.Game;
+            this.menu.close();
+            this.menu = null;
+        }
+    }
+
+    private handleGameModeKeyPress(keyPress: KeyboardEvent): Action | null {
+        if (KeyboardController.gameControls.has(keyPress.code)) {
+            return this.transformAction(KeyboardController.gameControls.get(keyPress.code));
+        } else if (KeyboardController.uiControls.has(keyPress.code)) {
+            switch (KeyboardController.uiControls.get(keyPress.code)) {
+            case UIAction.OpenInventory:
+                if (this.actor.hasComponent(Storage.Component)) {
+                    this.mode = ControlsMode.UI;
+                    this.menu = new StorageMenu("Inventory", this.actor.storage);
+                    this.menu.display();
+                }
+                break;
+            }
+        }
+        return null;
+    }
+
+    private handleUIModeKeyPress(keyPress: KeyboardEvent): Action | null {
+        if (!KeyboardController.uiControls.has(keyPress.code)) {
+            return null;
+        }
+        switch (KeyboardController.uiControls.get(keyPress.code)) {
+        case UIAction.CloseMenu:
+            this.closeMenu();
+            break;
+        }
+        return null;
+    }
+
     public async getAction(): Promise<Action> {
         this.game.draw();
         for await (const keyPress of KeyboardController.keyboard.keyPresses) {
-            if (KeyboardController.controls.has(keyPress.code)) {
-                const action = this.transformAction(KeyboardController.controls.get(keyPress.code));
-                if (isNotNull(action)) {
-                    return action;
-                }
-            } else if (keyPress.code === "KeyI") {
-                console.log((this.actor as any).storage.contents);
+            let action: Action | null = null;
+            switch (this.mode) {
+            case ControlsMode.Game:
+                action = this.handleGameModeKeyPress(keyPress);
+                break;
+            case ControlsMode.UI:
+                action = this.handleUIModeKeyPress(keyPress);
+                break;
+            }
+            if (isNotNull(action)) {
+                return action;
             }
         }
         throw new Error("Keyboard broke");

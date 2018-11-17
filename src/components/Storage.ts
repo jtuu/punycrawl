@@ -45,6 +45,10 @@ export class Storage extends ComponentData {
         }
     }
 
+    public [Symbol.iterator](): IterableIterator<Entity> {
+        return this.contents.values();
+    }
+
     // tslint:disable-next-line
     public dispose() {
 

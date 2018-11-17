@@ -58,3 +58,13 @@ export function parseCssValue(css?: string | null): CssValue | null {
     }
     return null;
 }
+
+export function* zip<A, B>(iterableA: Iterable<A>, iterableB: Iterable<B>): IterableIterator<[A, B]> {
+    const iA = iterableA[Symbol.iterator]();
+    const iB = iterableB[Symbol.iterator]();
+    let a;
+    let b;
+    while (!(a = iA.next()).done && !(b = iB.next()).done) {
+        yield [a.value, b.value];
+    }
+}

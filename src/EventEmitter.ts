@@ -1,6 +1,6 @@
 import { isDefined } from "./utils";
 
-interface TopicMap {
+export interface TopicMap {
     [topic: number]: any;
 }
 
