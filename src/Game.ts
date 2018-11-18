@@ -258,6 +258,7 @@ export class Game extends EventEmitter<GameEventTopicMap> {
 
     public async run() {
         this.running = true;
+        this.logger.logGlobal("Welcome! Press ? for help.");
         await this.sprites.load();
         this.syncActors();
         for (const actor_ of this.actors) {

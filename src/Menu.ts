@@ -1,12 +1,13 @@
-import { Storage } from "./components/Storage";
-import { Entity } from "./entities/Entity";
-import { assertNotNull, isDefined, zip } from "./utils";
+import { HelpMenu } from "./HelpMenu";
+import { StorageMenu } from "./StorageMenu";
+import { assertNotNull } from "./utils";
 
 export enum MenuKind {
+    NonInteractive,
     Storage
 }
 
-export type Menu = StorageMenu;
+export type Menu = StorageMenu | HelpMenu;
 
 export interface IMenu {
     readonly kind: MenuKind;
@@ -15,56 +16,42 @@ export interface IMenu {
     close(): void;
 }
 
-function* itemIdentifiers(): IterableIterator<string> {
-    const A = 65;
-    const Z = 90;
-    const a = 97;
-    const z = 122;
-    for (let i = a; i <= z; i++) {
-        yield String.fromCharCode(i);
-    }
-    for (let i = A; i <= Z; i++) {
-        yield String.fromCharCode(i);
-    }
-}
+export abstract class BaseMenu {
+    protected static readonly containerClassName: string = "menu";
+    protected static readonly titleClassName: string = "menu-title";
+    protected displayed: boolean = false;
+    protected container: HTMLDivElement | null = null;
 
-export class StorageMenu implements IMenu {
-    public readonly kind = MenuKind.Storage;
-    private displayed: boolean = false;
-    private static readonly containerClassName: string = "menu storage-menu";
-    private static readonly titleClassName: string = "menu-title";
-    private container: HTMLElement | null = null;
-    private readonly items: Map<string, Entity> = new Map();
-
-    constructor(
-        public readonly title: string,
-        public readonly storage: Storage
+    constructor (
+        public readonly title: string
     ) {}
 
-    public handleKeypress(keyPress: KeyboardEvent): Entity | null {
-        const item = this.items.get(keyPress.key);
-        if (isDefined(item)) {
-            return item;
+    protected createContainer(): HTMLDivElement {
+        const container = document.createElement("div");
+        container.className = BaseMenu.containerClassName;
+        const titleEl = document.createElement("div");
+        titleEl.className = BaseMenu.titleClassName;
+        titleEl.textContent = this.title;
+        container.appendChild(titleEl);
+        return container;
+    }
+
+    protected static *itemIdentifiers(): IterableIterator<string> {
+        const A = 65;
+        const Z = 90;
+        const a = 97;
+        const z = 122;
+        for (let i = a; i <= z; i++) {
+            yield String.fromCharCode(i);
         }
-        return null;
+        for (let i = A; i <= Z; i++) {
+            yield String.fromCharCode(i);
+        }
     }
 
     public display() {
         if (this.displayed) { return; }
         this.displayed = true;
-        this.container = document.createElement("div");
-        this.container.className = StorageMenu.containerClassName;
-        const title = document.createElement("div");
-        title.className = StorageMenu.titleClassName;
-        title.textContent = this.title;
-        this.container.appendChild(title);
-        for (const [id, entity] of zip(itemIdentifiers(), this.storage)) {
-            this.items.set(id, entity);
-            const row = document.createElement("div");
-            row.textContent = `[${id}] - ${entity.name}`;
-            this.container.appendChild(row);
-        }
-        document.body.appendChild(this.container);
     }
 
     public close() {

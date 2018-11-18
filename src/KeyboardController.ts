@@ -12,8 +12,10 @@ import { DungeonLevel } from "./DungeonLevel";
 import { Entity } from "./entities/Entity";
 import { Game } from "./Game";
 import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
+import { HelpMenu } from "./HelpMenu";
 import { Keyboard } from "./Keyboard";
-import { Menu, MenuKind, StorageMenu } from "./Menu";
+import { IMenu, MenuKind } from "./Menu";
+import { StorageMenu } from "./StorageMenu";
 import { StrictMap } from "./StrictMap";
 import { ClimbDirection } from "./Terrain";
 import { isNotNull } from "./utils";
@@ -26,6 +28,7 @@ enum ControlsMode {
 enum UIAction {
     OpenInventory,
     OpenDropMenu,
+    OpenHelpMenu,
     CloseMenu
 }
 
@@ -48,15 +51,25 @@ export class KeyboardController extends IController {
         ["Numpad7", ActionFactory.createMoveAction(...NW)],
         ["Numpad8", ActionFactory.createMoveAction(...N)],
         ["Numpad9", ActionFactory.createMoveAction(...NE)],
+        ["KeyB", ActionFactory.createMoveAction(...SW)],
+        ["KeyJ", ActionFactory.createMoveAction(...S)],
+        ["KeyN", ActionFactory.createMoveAction(...SE)],
+        ["KeyH", ActionFactory.createMoveAction(...W)],
+        ["Period", ActionFactory.createRestAction()],
+        ["KeyL", ActionFactory.createMoveAction(...E)],
+        ["KeyY", ActionFactory.createMoveAction(...NW)],
+        ["KeyK", ActionFactory.createMoveAction(...N)],
+        ["KeyU", ActionFactory.createMoveAction(...NE)],
         ["IntlBackslash", ActionFactory.createClimbStairsAction()],
         ["KeyG", ActionFactory.createPickupAction()]
     ] as Array<[string, Action]>);
     private static readonly uiControls: StrictMap<string, UIAction> = new StrictMap([
         ["KeyI", UIAction.OpenInventory],
         ["KeyD", UIAction.OpenDropMenu],
+        ["?", UIAction.OpenHelpMenu],
         ["Escape", UIAction.CloseMenu]
     ]);
-    private menu: Menu | null = null;
+    private menu: IMenu | null = null;
     private controlsMode: ControlsMode = ControlsMode.Game;
     private menuMode: MenuMode = MenuMode.None;
 
@@ -181,11 +194,24 @@ export class KeyboardController extends IController {
         return null;
     }
 
+    private openHelp() {
+        this.menuMode = MenuMode.None;
+        this.controlsMode = ControlsMode.UI;
+        this.menu = new HelpMenu();
+        this.menu.display();
+    }
+
     private handleGameModeKeyPress(keyPress: KeyboardEvent): Action | null {
         if (KeyboardController.gameControls.has(keyPress.code)) {
             return this.transformAction(KeyboardController.gameControls.get(keyPress.code));
-        } else if (KeyboardController.uiControls.has(keyPress.code)) {
-            switch (KeyboardController.uiControls.get(keyPress.code)) {
+        } else {
+            let action: UIAction | null = null;
+            if (KeyboardController.uiControls.has(keyPress.code)) {
+                action = KeyboardController.uiControls.get(keyPress.code);
+            } else if (KeyboardController.uiControls.has(keyPress.key)) {
+                action = KeyboardController.uiControls.get(keyPress.key);
+            }
+            switch (action) {
             case UIAction.OpenDropMenu:
                 this.menuMode = MenuMode.Drop;
                 this.openInventory("Drop what?");
@@ -193,6 +219,9 @@ export class KeyboardController extends IController {
             case UIAction.OpenInventory:
                 this.menuMode = MenuMode.Inventory;
                 this.openInventory("Inventory");
+                break;
+            case UIAction.OpenHelpMenu:
+                this.openHelp();
                 break;
             }
         }
