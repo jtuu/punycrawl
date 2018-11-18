@@ -2,6 +2,7 @@ import { Entity } from "../entities/Entity";
 import { Game } from "../Game";
 import { AttackAction } from "./AttackAction";
 import { ClimbStairsAction } from "./ClimbStairsAction";
+import { DropAction } from "./DropAction";
 import { MoveAction } from "./MoveAction";
 import { PickupAction } from "./PickupAction";
 import { RestAction } from "./RestAction";
@@ -11,7 +12,8 @@ export enum ActionKind {
     ClimbStairs,
     Move,
     Rest,
-    Pickup
+    Pickup,
+    Drop
 }
 
 export interface IAction {
@@ -19,4 +21,4 @@ export interface IAction {
     execute(game: Game, actor: Entity): void;
 }
 
-export type Action = AttackAction | ClimbStairsAction | MoveAction | RestAction | PickupAction;
+export type Action = AttackAction | ClimbStairsAction | MoveAction | RestAction | PickupAction | DropAction;
