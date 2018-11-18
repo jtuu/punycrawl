@@ -48,3 +48,14 @@ canvas {
     padding: 0.5em;
     white-space: pre;
 }
+
+.equipment {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 2em;
+    margin-right: 2em;
+}
+
+.equipment-empty {
+    color: gray;
+}

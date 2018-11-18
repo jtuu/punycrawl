@@ -1,3 +1,4 @@
+
 export function isNotNull<T>(thing: T | null): thing is T {
     return thing !== null;
 }
@@ -67,4 +68,8 @@ export function* zip<A, B>(iterableA: Iterable<A>, iterableB: Iterable<B>): Iter
     while (!(a = iA.next()).done && !(b = iB.next()).done) {
         yield [a.value, b.value];
     }
+}
+
+export function enumValues<T>(e: T): Array<T[keyof T]> {
+    return Object.values(e).filter(v => !isNaN(v));
 }

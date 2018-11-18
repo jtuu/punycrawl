@@ -10,7 +10,7 @@ import { DungeonLevel } from "./DungeonLevel";
 import { Entity } from "./entities/Entity";
 import { Goblin } from "./entities/Goblin";
 import { Human } from "./entities/Human";
-import { Trinket } from "./entities/Item";
+import { Trinket } from "./entities/Trinket";
 import { EventEmitter } from "./EventEmitter";
 import { Visibility } from "./fov";
 import { Id, sortById } from "./Id";

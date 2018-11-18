@@ -10,9 +10,3 @@ export abstract class Item extends Entity {
         this.addComponent(new Physical.Component(this, false));
     }
 }
-
-export class Trinket extends Item {
-    constructor(game: Game) {
-        super(game, "Trinket", "trinket");
-    }
-}
