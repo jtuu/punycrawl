@@ -4,12 +4,15 @@ import { ClimbStairsAction } from "./actions/ClimbStairsAction";
 import { MoveAction } from "./actions/MoveAction";
 import { PickupAction } from "./actions/PickupAction";
 import { Damageable } from "./components/Damageable";
+import { Equipable } from "./components/Equipable";
+import { Equipment } from "./components/Equipment";
 import { Location } from "./components/Location";
 import { Physical } from "./components/Physical";
 import { Storage } from "./components/Storage";
 import { ControllerKind, IController } from "./Controller";
 import { DungeonLevel } from "./DungeonLevel";
 import { Entity } from "./entities/Entity";
+import { EquipmentMenu } from "./EquipmentMenu";
 import { Game } from "./Game";
 import { E, N, NE, NW, S, SE, SW, W } from "./geometry";
 import { HelpMenu } from "./HelpMenu";
@@ -29,12 +32,14 @@ enum UIAction {
     OpenInventory,
     OpenDropMenu,
     OpenHelpMenu,
+    OpenEquipmentMenu,
     CloseMenu
 }
 
 enum MenuMode {
     None,
     Inventory,
+    EquipOrUnequip,
     Drop
 }
 
@@ -66,6 +71,7 @@ export class KeyboardController extends IController {
     private static readonly uiControls: StrictMap<string, UIAction> = new StrictMap([
         ["KeyI", UIAction.OpenInventory],
         ["KeyD", UIAction.OpenDropMenu],
+        ["KeyW", UIAction.OpenEquipmentMenu],
         ["?", UIAction.OpenHelpMenu],
         ["Escape", UIAction.CloseMenu]
     ]);
@@ -194,6 +200,16 @@ export class KeyboardController extends IController {
         return null;
     }
 
+    private openEquipmentMenu(): EquipmentMenu | null {
+        if (this.actor.hasComponents(Equipment.Component, Storage.Component)) {
+            this.controlsMode = ControlsMode.UI;
+            const menu = this.menu = new EquipmentMenu(this.actor.storage, this.actor.equipment);
+            menu.display();
+            return menu;
+        }
+        return null;
+    }
+
     private openHelp() {
         this.menuMode = MenuMode.None;
         this.controlsMode = ControlsMode.UI;
@@ -223,6 +239,10 @@ export class KeyboardController extends IController {
             case UIAction.OpenHelpMenu:
                 this.openHelp();
                 break;
+            case UIAction.OpenEquipmentMenu:
+                this.menuMode = MenuMode.EquipOrUnequip;
+                this.openEquipmentMenu();
+                break;
             }
         }
         return null;
@@ -241,6 +261,17 @@ export class KeyboardController extends IController {
                 break;
             case MenuMode.Drop:
                 return ActionFactory.createDropAction(selected.id);
+            case MenuMode.EquipOrUnequip:
+                if (selected.hasComponent(Equipable.Component) && this.actor.hasComponent(Equipment.Component)) {
+                    if (this.actor.equipment.hasEquipped(selected)) {
+                        this.game.logger.logGlobal("That is already equipped.");
+                    } else {
+                        return ActionFactory.createEquipAction(selected.id);
+                    }
+                } else {
+                    this.game.logger.logGlobal(`You can't equip a ${selected.name}.`);
+                }
+                break;
             }
         }
         return null;

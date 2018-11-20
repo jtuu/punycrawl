@@ -1,5 +1,6 @@
 import { Controlled } from "../components/Controlled";
 import { Damageable } from "../components/Damageable";
+import { Equipment } from "../components/Equipment";
 import { Physical } from "../components/Physical";
 import { Renderable } from "../components/Renderable";
 import { Storage } from "../components/Storage";
@@ -13,6 +14,7 @@ export class Human extends Entity {
         super(game, "Human");
         this.addComponent(new Controlled.Component(this, KeyboardController));
         this.addComponent(new Damageable.Component(this, 100));
+        this.addComponent(new Equipment.Component(this));
         this.addComponent(new Renderable.Component(this, "human_male2"));
         this.addComponent(new Physical.Component(this, true));
         this.addComponent(new Storage.Component(this, 30));
