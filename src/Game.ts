@@ -17,6 +17,7 @@ import { Id, sortById } from "./Id";
 import { MessageLog } from "./MessageLog";
 import { SpriteManager } from "./SpriteManager";
 import { assertNotNull, isDefined, isNotNull } from "./utils";
+import { v } from "./vdom";
 
 const TilePixelSize = 32;
 // size in tiles, should be odd so that the camera can be centered properly
@@ -100,8 +101,8 @@ type GameEventTopicMap = {
 export class Game extends EventEmitter<GameEventTopicMap> {
     private static readonly defaultFloorWidth: number = 100;
     private static readonly defaultFloorHeight: number = 100;
-    private readonly memoryCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
-    private readonly mainCanvas: HTMLCanvasElement = document.body.appendChild(document.createElement("canvas"));
+    private readonly memoryCanvas: HTMLCanvasElement = v("canvas").appendTo(document.body);
+    private readonly mainCanvas: HTMLCanvasElement = v("canvas").appendTo(document.body);
     public mainCtx: CanvasRenderingContext2D;
     private memoryCtx: CanvasRenderingContext2D;
     private readonly levels: Array<DungeonLevel> = [];
