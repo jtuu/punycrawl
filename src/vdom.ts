@@ -9,7 +9,19 @@ type VirtualNodeAttributes = Partial<BaseVirtualNodeAttributes>;
 type VirtualNodeChildren = string | Array<VirtualNode<any>>;
 type VirtualNodeOptionalArg = VirtualNodeAttributes | VirtualNodeChildren;
 
-class VirtualNode<T extends TagName> {
+export interface VirtualNode<T extends TagName> {
+    readonly tagName: T;
+    readonly attrs: Partial<VirtualNodeAttributes>;
+    text: string | null;
+    readonly children: Array<VirtualNode<any>>;
+    toDOM(): HTMLElementTagNameMap[T];
+    appendTo(parent: Node): HTMLElementTagNameMap[T];
+    prependTo(parent: Node): HTMLElementTagNameMap[T];
+    insertAfter(sibling: Node): HTMLElementTagNameMap[T];
+    insertBefore(sibling: Node): HTMLElementTagNameMap[T];
+}
+
+class VirtualNodeImpl<T extends TagName> implements VirtualNode<T> {
     public readonly tagName: T;
     public readonly attrs: Partial<VirtualNodeAttributes>;
     public text: string | null = null;
@@ -82,18 +94,24 @@ class VirtualNode<T extends TagName> {
         return self;
     }
 
-    public prependTo(parent: Node) {
-        parent.insertBefore(this.toDOM(), parent.firstChild);
+    public prependTo(parent: Node): HTMLElementTagNameMap[T] {
+        const self = this.toDOM();
+        parent.insertBefore(self, parent.firstChild);
+        return self;
     }
 
-    public insertAfter(sibling: Node) {
-        const parent = VirtualNode.getParent(sibling);
-        parent.insertBefore(this.toDOM(), sibling.nextSibling);
+    public insertAfter(sibling: Node): HTMLElementTagNameMap[T] {
+        const self = this.toDOM();
+        const parent = VirtualNodeImpl.getParent(sibling);
+        parent.insertBefore(self, sibling.nextSibling);
+        return self;
     }
 
-    public insertBefore(sibling: Node) {
-        const parent = VirtualNode.getParent(sibling);
-        parent.insertBefore(this.toDOM(), sibling.nextSibling);
+    public insertBefore(sibling: Node): HTMLElementTagNameMap[T] {
+        const self = this.toDOM();
+        const parent = VirtualNodeImpl.getParent(sibling);
+        parent.insertBefore(self, sibling.nextSibling);
+        return self;
     }
 }
 
@@ -102,5 +120,5 @@ export function v<T extends TagName>(
     attrsOrChildren?: VirtualNodeOptionalArg,
     children?: VirtualNodeChildren
 ): VirtualNode<T> {
-    return new VirtualNode(tagName, attrsOrChildren, children);
+    return new VirtualNodeImpl(tagName, attrsOrChildren, children);
 }
