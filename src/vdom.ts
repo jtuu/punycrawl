@@ -15,10 +15,10 @@ class VirtualNodeClassList extends Array<string> implements DOMTokenList {
     private addOne(className: string): boolean {
         const idx = this.indexOf(className);
         if (idx > -1) {
-            this.push(className);
-            return true;
+            return false;
         }
-        return false;
+        this.push(className);
+        return true;
     }
 
     public add(...classNames: Array<string>) {
@@ -141,7 +141,7 @@ type VirtualNodeOptionalArg = Partial<VirtualNodeAttributesArg> | VirtualNodeChi
 
 export interface VirtualNode<T extends TagName> {
     readonly tagName: T;
-    readonly attrs: Partial<VirtualNodeAttributes>;
+    readonly attrs: VirtualNodeAttributes;
     text: string | null;
     readonly children: Array<VirtualNode<any>>;
     toDOM(): HTMLElementTagNameMap[T];

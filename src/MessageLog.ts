@@ -2,18 +2,18 @@ import { Location } from "./components/Location";
 import { Vision } from "./components/Vision";
 import { Game } from "./Game";
 import { assertNotNull, CssValue, isNotNull, parseCssValue } from "./utils";
+import { v, VirtualNode } from "./vdom";
 
 export class MessageLog {
     private static readonly containerClassName: string = "message-log";
     private static readonly messageClassName: string = "message";
-    public readonly container: HTMLElement = document.createElement("div");
+    public readonly container: HTMLElement;
     private readonly messages: Array<string> = [];
     private readonly lineHeight: CssValue;
     private numLines_: number;
 
     constructor(private readonly game: Game, parent: HTMLElement, numLines: number) {
-        this.container.className = MessageLog.containerClassName;
-        parent.appendChild(this.container);
+        this.container = v("div", {class: MessageLog.containerClassName}).appendTo(parent);
         const containerLineHeight = parseCssValue(this.container.style.lineHeight);
         if (containerLineHeight) {
             this.lineHeight = containerLineHeight;
@@ -24,11 +24,8 @@ export class MessageLog {
         this.updateHeight();
     }
 
-    private static createMessage(text: string): HTMLDivElement {
-        const el = document.createElement("div");
-        el.className = MessageLog.messageClassName;
-        el.textContent = text;
-        return el;
+    private static createMessage(text: string): VirtualNode<"div"> {
+        return v("div", {class: MessageLog.messageClassName}, text);
     }
 
     private getCurrentMessages(): Array<string> {
@@ -42,7 +39,7 @@ export class MessageLog {
         if (this.messages.length > this.numLines_ && isNotNull(first)) {
             this.container.removeChild(first);
         }
-        this.container.appendChild(msg);
+        msg.appendTo(this.container);
     }
 
     public logGlobal(text: string) {
@@ -80,7 +77,7 @@ export class MessageLog {
         const newContents = document.createDocumentFragment();
         for (const text of this.getCurrentMessages()) {
             const msg = MessageLog.createMessage(text);
-            newContents.appendChild(msg);
+            msg.appendTo(newContents);
         }
         this.container.appendChild(newContents);
     }

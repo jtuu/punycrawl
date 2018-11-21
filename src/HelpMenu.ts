@@ -1,4 +1,5 @@
 import { BaseMenu, IMenu, MenuKind } from "./Menu";
+import { v } from "./vdom";
 
 export class HelpMenu extends BaseMenu implements IMenu {
     protected static readonly containerClassName: string = "help-menu";
@@ -53,11 +54,9 @@ d : Drop an item
 
     public display() {
         super.display();
-        this.container = this.createContainer();
-        this.container.classList.add(HelpMenu.containerClassName);
-        const helpEl = document.createElement("div");
-        helpEl.textContent = HelpMenu.helpText;
-        this.container.appendChild(helpEl);
-        document.body.appendChild(this.container);
+        const container = this.createContainer();
+        container.attrs.classList.add(HelpMenu.containerClassName);
+        container.children.push(v("div", HelpMenu.helpText));
+        this.container = container.appendTo(document.body);
     }
 }
