@@ -6,17 +6,17 @@ interface BaseVirtualNodeAttributes {
 
 type TagName = keyof HTMLElementTagNameMap;
 type VirtualNodeAttributes = Partial<BaseVirtualNodeAttributes>;
-type VirtualNodeChildren = string | Array<VirtualNode>;
+type VirtualNodeChildren = string | Array<VirtualNode<any>>;
 type VirtualNodeOptionalArg = VirtualNodeAttributes | VirtualNodeChildren;
 
-class VirtualNode {
-    public readonly tagName: TagName;
+class VirtualNode<T extends TagName> {
+    public readonly tagName: T;
     public readonly attrs: Partial<VirtualNodeAttributes>;
     public text: string | null = null;
-    public readonly children: Array<VirtualNode>;
+    public readonly children: Array<VirtualNode<any>>;
 
     constructor(
-        tagName: TagName,
+        tagName: T,
         attrsOrChildren?: VirtualNodeOptionalArg,
         children?: VirtualNodeChildren
     ) {
@@ -67,7 +67,7 @@ class VirtualNode {
         return parent;
     }
 
-    public toDOM(): HTMLElement {
+    public toDOM(): HTMLElementTagNameMap[T] {
         const self = document.createElement(this.tagName);
         this.setAttrs(self);
         for (const child of this.children) {
@@ -76,8 +76,10 @@ class VirtualNode {
         return self;
     }
 
-    public appendTo(parent: Node) {
-        parent.appendChild(this.toDOM());
+    public appendTo(parent: Node): HTMLElementTagNameMap[T] {
+        const self = this.toDOM();
+        parent.appendChild(self);
+        return self;
     }
 
     public prependTo(parent: Node) {
@@ -95,6 +97,10 @@ class VirtualNode {
     }
 }
 
-export function v(...args: ConstructorParameters<typeof VirtualNode>): VirtualNode {
-    return new VirtualNode(...args);
+export function v<T extends TagName>(
+    tagName: T,
+    attrsOrChildren?: VirtualNodeOptionalArg,
+    children?: VirtualNodeChildren
+): VirtualNode<T> {
+    return new VirtualNode(tagName, attrsOrChildren, children);
 }
