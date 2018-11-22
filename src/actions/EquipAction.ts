@@ -16,7 +16,7 @@ export class EquipAction implements IAction {
     public execute(game: Game, actor: Entity) {
         const targetId = assertNotNull(this.targetId);
         const asComponent = actor.assertHasComponents(Equipment.Component, Storage.Component);
-        const target = assertNotNull(asComponent.storage.take(targetId)).assertHasComponent(Equipable.Component);
+        const target = assertNotNull(asComponent.storage.find(targetId)).assertHasComponent(Equipable.Component);
         asComponent.equipment.equip(target);
         if (actor.hasComponent(Location.Component)) {
             game.logger.logLocal(actor.location, `The ${actor.name} equips a ${target.name}.`);

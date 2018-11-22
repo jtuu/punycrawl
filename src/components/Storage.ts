@@ -1,5 +1,6 @@
 import { Entity } from "../entities/Entity";
 import { Id } from "../Id";
+import { isDefined } from "../utils";
 import { Component, ComponentData } from "./Component";
 
 class StorageComponent extends Component {
@@ -23,7 +24,7 @@ class StorageComponent extends Component {
 
 export class Storage extends ComponentData {
     public static readonly Component = StorageComponent;
-    private readonly contents: Set<Entity> = new Set();
+    private readonly contents: Map<Id, Entity> = new Map();
 
     constructor(
         owner: Entity,
@@ -42,21 +43,21 @@ export class Storage extends ComponentData {
 
     public add(entity: Entity) {
         if (!this.isFull()) {
-            this.contents.add(entity);
+            this.contents.set(entity.id, entity);
         }
     }
 
     public take(id: Id): Entity | null {
-        let found = null;
-        for (const entity of this.contents) {
-            if (entity.id === id) {
-                found = entity;
-                break;
-            }
+        const entity = this.contents.get(id);
+        if (isDefined(entity)) {
+            this.contents.delete(id);
+            return entity;
         }
-        if (found === null) { return null; }
-        this.contents.delete(found);
-        return found;
+        return null;
+    }
+
+    public find(id: Id): Entity | null {
+        return this.contents.get(id) || null;
     }
 
     public [Symbol.iterator](): IterableIterator<Entity> {
