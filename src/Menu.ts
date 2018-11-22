@@ -1,6 +1,7 @@
 import { HelpMenu } from "./HelpMenu";
 import { StorageMenu } from "./StorageMenu";
 import { assertNotNull } from "./utils";
+import { v, VirtualNode } from "./vdom";
 
 export enum MenuKind {
     NonInteractive,
@@ -26,14 +27,10 @@ export abstract class BaseMenu {
         public readonly title: string
     ) {}
 
-    protected createContainer(): HTMLDivElement {
-        const container = document.createElement("div");
-        container.className = BaseMenu.containerClassName;
-        const titleEl = document.createElement("div");
-        titleEl.className = BaseMenu.titleClassName;
-        titleEl.textContent = this.title;
-        container.appendChild(titleEl);
-        return container;
+    protected createContainer(): VirtualNode<"div"> {
+        return v("div", {class: BaseMenu.containerClassName}, [
+            v("div", {class: BaseMenu.titleClassName}, this.title)
+        ]);
     }
 
     protected static *itemIdentifiers(): IterableIterator<string> {
