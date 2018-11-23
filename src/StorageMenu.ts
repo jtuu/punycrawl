@@ -1,3 +1,5 @@
+import { Equipable } from "./components/Equipable";
+import { Equipment } from "./components/Equipment";
 import { Storage } from "./components/Storage";
 import { Entity } from "./entities/Entity";
 import { BaseMenu, IMenu, MenuKind } from "./Menu";
@@ -26,11 +28,24 @@ export class StorageMenu extends BaseMenu implements IMenu {
 
     public display() {
         super.display();
+        const owner = this.storage.owner;
         const container = this.createContainer();
         container.attrs.classList.add(StorageMenu.containerClassName);
-        for (const [id, entity] of zip(BaseMenu.itemIdentifiers(), this.storage)) {
-            this.items.set(id, entity);
-            container.children.push(v("div", `[${id}] - ${entity.name}`));
+        const iter = zip(BaseMenu.itemIdentifiers(), this.storage);
+        if (owner.hasComponent(Equipment.Component)) {
+            for (const [id, entity] of iter) {
+                this.items.set(id, entity);
+                let rowText = `[${id}] - ${entity.name}`;
+                if (entity.hasComponent(Equipable.Component) && owner.equipment.hasEquipped(entity)) {
+                    rowText += " (equipped)";
+                }
+                container.children.push(v("div", rowText));
+            }
+        } else {
+            for (const [id, entity] of iter) {
+                this.items.set(id, entity);
+                container.children.push(v("div", `[${id}] - ${entity.name}`));
+            }
         }
         this.container = container.appendTo(document.body);
     }
