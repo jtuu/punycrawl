@@ -39,6 +39,7 @@ Inventory management:
 i : Show inventory
 g : Pick up an item
 d : Drop an item
+w : Equip or unequip items
 `;
 
     public readonly kind = MenuKind.NonInteractive;
