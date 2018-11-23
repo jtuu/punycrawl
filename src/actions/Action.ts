@@ -7,6 +7,7 @@ import { EquipAction } from "./EquipAction";
 import { MoveAction } from "./MoveAction";
 import { PickupAction } from "./PickupAction";
 import { RestAction } from "./RestAction";
+import { UnequipAction } from "./UnequipAction";
 
 export enum ActionKind {
     Attack,
@@ -24,4 +25,11 @@ export interface IAction {
     execute(game: Game, actor: Entity): void;
 }
 
-export type Action = AttackAction | ClimbStairsAction | MoveAction | RestAction | PickupAction | DropAction | EquipAction;
+export type Action = AttackAction |
+                     ClimbStairsAction |
+                     MoveAction |
+                     RestAction |
+                     PickupAction |
+                     DropAction |
+                     EquipAction |
+                     UnequipAction;

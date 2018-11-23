@@ -6,6 +6,7 @@ import { EquipAction } from "./EquipAction";
 import { MoveAction } from "./MoveAction";
 import { PickupAction } from "./PickupAction";
 import { RestAction } from "./RestAction";
+import { UnequipAction } from "./UnequipAction";
 
 export class ActionFactory {
     public static createMoveAction(dx: number, dy: number): MoveAction {
@@ -34,5 +35,9 @@ export class ActionFactory {
 
     public static createEquipAction(targetId: Id): EquipAction {
         return new EquipAction(targetId);
+    }
+
+    public static createUnequipAction(targetId: Id): UnequipAction {
+        return new UnequipAction(targetId);
     }
 }

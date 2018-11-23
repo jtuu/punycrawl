@@ -60,6 +60,10 @@ export class Equipment extends ComponentData {
         this.slots.set(entity.equipable.slot, entity);
     }
 
+    public unequip(entity: Entity & typeof Equipable.Component.prototype) {
+        this.slots.delete(entity.equipable.slot);
+    }
+
     public hasEquipped(entity: Entity & typeof Equipable.Component.prototype): boolean {
         return this.slots.get(entity.equipable.slot) === entity;
     }
