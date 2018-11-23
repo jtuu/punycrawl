@@ -17,6 +17,9 @@ class PhysicalComponent extends Component {
 
     public static removeFromEntity(entity: Entity) {
         this.untagger.call(entity);
+        if (entity.hasComponent(this)) {
+            delete entity.physical;
+        }
     }
 }
 
