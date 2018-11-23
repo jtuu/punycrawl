@@ -2,6 +2,8 @@ import { Entity } from "../entities/Entity";
 import { Id } from "../Id";
 import { isDefined } from "../utils";
 import { Component, ComponentData } from "./Component";
+import { Equipable } from "./Equipable";
+import { Equipment } from "./Equipment";
 
 class StorageComponent extends Component {
     public storage: Storage;
@@ -50,6 +52,9 @@ export class Storage extends ComponentData {
     public take(id: Id): Entity | null {
         const entity = this.contents.get(id);
         if (isDefined(entity)) {
+            if (this.owner.hasComponent(Equipment.Component) && entity.hasComponent(Equipable.Component)) {
+                this.owner.equipment.unequip(entity);
+            }
             this.contents.delete(id);
             return entity;
         }
