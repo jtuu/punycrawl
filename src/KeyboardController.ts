@@ -264,7 +264,7 @@ export class KeyboardController extends IController {
             case MenuMode.EquipOrUnequip:
                 if (selected.hasComponent(Equipable.Component) && this.actor.hasComponent(Equipment.Component)) {
                     if (this.actor.equipment.hasEquipped(selected)) {
-                        this.game.logger.logGlobal("That is already equipped.");
+                        return ActionFactory.createUnequipAction(selected.id);
                     } else {
                         return ActionFactory.createEquipAction(selected.id);
                     }
