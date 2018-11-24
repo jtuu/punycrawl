@@ -1,6 +1,6 @@
 import { ActionKind } from "./actions/Action";
 import { filterEntities } from "./components/Component";
-import { Controlled } from "./components/Controlled";
+import { Controlled, energyTreshold } from "./components/Controlled";
 import { Damageable } from "./components/Damageable";
 import { Location } from "./components/Location";
 import { Renderable } from "./components/Renderable";
@@ -262,34 +262,38 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         this.logger.logGlobal("Welcome! Press ? for help.");
         await this.sprites.load();
         this.syncActors();
+        top:
         for (const actor_ of this.actors) {
             const actor = assertNotNull(actor_);
-            const action = await actor.controlled.controller.getAction();
-            action.execute(this, actor);
-            let location: Location | null = null;
-            if (actor.hasComponent(Location.Component)) {
-                actor.location.invalidatePathmapCache();
-                location = actor.location;
-            }
-            if (actor.hasComponent(Vision.Component)) {
-                actor.vision.invalidateFovCache();
-            }
-            if (actor === this.trackedEntity_) {
+            actor.controlled.gainEnergy();
+            while (actor.controlled.energy >= energyTreshold) {
+                const action = await actor.controlled.controller.getAction();
+                actor.controlled.energy -= action.execute(this, actor);
+                let location: Location | null = null;
+                if (actor.hasComponent(Location.Component)) {
+                    actor.location.invalidatePathmapCache();
+                    location = actor.location;
+                }
+                if (actor.hasComponent(Vision.Component)) {
+                    actor.vision.invalidateFovCache();
+                }
+                if (actor === this.trackedEntity_) {
+                    switch (action.kind) {
+                        case ActionKind.ClimbStairs:
+                            this.memoryCtx.clearRect(0, 0, this.memoryCanvas.width, this.memoryCanvas.height);
+                            this.currentLevel = assertNotNull(location).dungeonLevel;
+                        case ActionKind.Move:
+                            this.updateCamera();
+                            break;
+                    }
+                }
                 switch (action.kind) {
                     case ActionKind.ClimbStairs:
-                        this.memoryCtx.clearRect(0, 0, this.memoryCanvas.width, this.memoryCanvas.height);
-                        this.currentLevel = assertNotNull(location).dungeonLevel;
-                    case ActionKind.Move:
-                        this.updateCamera();
+                        this.syncActors();
                         break;
                 }
+                if (!this.running) { break top; }
             }
-            switch (action.kind) {
-                case ActionKind.ClimbStairs:
-                    this.syncActors();
-                    break;
-            }
-            if (!this.running) { break; }
         }
         this.logger.logGlobal("You lose.");
     }

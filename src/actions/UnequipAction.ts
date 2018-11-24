@@ -1,3 +1,4 @@
+import { getActionCost } from "../components/Controlled";
 import { Equipable } from "../components/Equipable";
 import { Equipment } from "../components/Equipment";
 import { Location } from "../components/Location";
@@ -13,7 +14,7 @@ export class UnequipAction implements IAction {
     
     constructor(public targetId: Id) {}
 
-    public execute(game: Game, actor: Entity) {
+    public execute(game: Game, actor: Entity): number {
         const targetId = assertNotNull(this.targetId);
         const asComponent = actor.assertHasComponents(Equipment.Component, Storage.Component);
         const target = assertNotNull(asComponent.storage.find(targetId)).assertHasComponent(Equipable.Component);
@@ -21,5 +22,6 @@ export class UnequipAction implements IAction {
         if (actor.hasComponent(Location.Component)) {
             game.logger.logLocal(actor.location, `The ${actor.name} takes off its ${target.name}.`);
         }
+        return getActionCost(actor, this.kind);
     }
 }

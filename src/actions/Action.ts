@@ -22,7 +22,7 @@ export enum ActionKind {
 
 export interface IAction {
     readonly kind: ActionKind;
-    execute(game: Game, actor: Entity): void;
+    execute(game: Game, actor: Entity): number;
 }
 
 export type Action = AttackAction |

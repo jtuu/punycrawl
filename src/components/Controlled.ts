@@ -1,3 +1,4 @@
+import { ActionKind } from "../actions/Action";
 import { Controller, IController } from "../Controller";
 import { Entity } from "../entities/Entity";
 import { Component, ComponentData } from "./Component";
@@ -25,9 +26,26 @@ class ControlledComponent extends Component {
     }
 }
 
+export const energyTreshold = 100;
+export const baseEnergyCosts = {
+    [ActionKind.Attack]: 100,
+    [ActionKind.ClimbStairs]: 150,
+    [ActionKind.Move]: 100,
+    [ActionKind.Rest]: 100,
+    [ActionKind.Pickup]: 100,
+    [ActionKind.Drop]: 100,
+    [ActionKind.Equip]: 150,
+    [ActionKind.Unequip]: 150
+};
+
+export function getActionCost(_actor: Entity, kind: ActionKind): number {
+    return baseEnergyCosts[kind];
+}
+
 export class Controlled extends ComponentData {
     public static readonly Component = ControlledComponent;
     public controller: IController;
+    public energy: number = 0;
 
     constructor(
         owner: Entity,
@@ -35,6 +53,10 @@ export class Controlled extends ComponentData {
     ) {
         super(owner);
         this.controller = new controllerCtor(owner.game, owner as any);
+    }
+
+    public gainEnergy() {
+        this.energy += 10;
     }
 
     public dispose() {

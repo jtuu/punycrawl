@@ -1,3 +1,4 @@
+import { getActionCost } from "../components/Controlled";
 import { Location } from "../components/Location";
 import { Storage } from "../components/Storage";
 import { Entity } from "../entities/Entity";
@@ -10,7 +11,7 @@ export class PickupAction implements IAction {
     public readonly kind = ActionKind.Pickup;
     public targetId: Id | null = null;
 
-    public execute(game: Game, actor: Entity) {
+    public execute(game: Game, actor: Entity): number {
         const targetId = assertNotNull(this.targetId);
         const asComponent = actor.assertHasComponents(Location.Component, Storage.Component);
         const {dungeonLevel, x, y} = asComponent.location;
@@ -18,5 +19,6 @@ export class PickupAction implements IAction {
         dungeonLevel.removeEntity(target);
         asComponent.storage.add(target);
         game.logger.logLocal(asComponent.location, `The ${actor.name} picks up the ${target.name}.`);
+        return getActionCost(actor, this.kind);
     }
 }

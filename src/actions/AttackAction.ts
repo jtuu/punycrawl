@@ -1,3 +1,4 @@
+import { getActionCost } from "../components/Controlled";
 import { Damageable } from "../components/Damageable";
 import { Location } from "../components/Location";
 import { Entity } from "../entities/Entity";
@@ -12,7 +13,7 @@ export class AttackAction implements IAction {
         public readonly dy: number
     ) {}
 
-    public execute(game: Game, actor: Entity) {
+    public execute(game: Game, actor: Entity): number {
         const {location} = actor.assertHasComponent(Location.Component);
         const level = location.dungeonLevel;
         const x = location.x + this.dx;
@@ -28,5 +29,6 @@ export class AttackAction implements IAction {
                 }
             }
         }
+        return getActionCost(actor, this.kind);
     }
 }
