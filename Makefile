@@ -2,7 +2,7 @@ TSC = node_modules/typescript/bin/tsc
 EMCC = emcc
 OUTDIR = build
 
-all: spritesheet js wasm html css
+all: spritesheet js wasm html css fonts
 
 $(OUTDIR):
 	-mkdir $(OUTDIR)
@@ -41,6 +41,14 @@ src/spritesheet.d.ts: resources/sprites.json
 	node scripts/gen_spritesheet.js -i $< -t $@
 
 spritesheet: $(OUTDIR) $(OUTDIR)/spritesheet.json src/spritesheet.d.ts
+
+resources/puny8x10.ttf: resources/puny8x10.xcf
+	fontmaker $<
+	cp resources/puny8x10/puny8x10.ttf resources/
+	rm -r resources/puny8x10/
+
+fonts: resources/puny8x10.ttf
+	cp $^ $(OUTDIR)
 
 clean:
 	-rm -r $(OUTDIR)

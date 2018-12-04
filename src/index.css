@@ -1,3 +1,8 @@
+@font-face {
+    font-family: "puny";
+    src: url("puny8x10.ttf") format("truetype");
+}
+
 html, body {
     margin: 0;
     background-color: black;
@@ -11,9 +16,11 @@ canvas {
 .message-log {
     overflow-y: hidden;
     color: white;
-    font-family: monospace;
-    font-size: 12pt;
+    font-family: "puny";
+    font-size: 10px;
     position: absolute;
+    text-transform: uppercase;
+    text-shadow: 0 0 1px white;
 }
 
 .menu {
@@ -21,8 +28,10 @@ canvas {
     background-color: black;
     color: white;
     border: 1px solid white;
-    font-family: monospace;
-    font-size: 12pt;
+    font-family: "puny";
+    font-size: 10px;
+    text-transform: uppercase;
+    text-shadow: 0 0 1px white;
 }
 
 .menu-title {
