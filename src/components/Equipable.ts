@@ -1,4 +1,5 @@
 import { Entity } from "../entities/Entity";
+import { enumSize } from "../utils";
 import { Component, ComponentData } from "./Component";
 import { EquipmentSlot } from "./Equipment";
 
@@ -24,8 +25,20 @@ class EquipableComponent extends Component {
     }
 }
 
+export enum EquipableStats {
+    MeleeDice1,
+    MeleeDice2,
+    MeleeAccuracy,
+    MeleeDelay,
+    ArmorRating,
+    Encumbrance
+}
+
+const numEquipableStats = enumSize(EquipableStats);
+
 export class Equipable extends ComponentData {
     public static readonly Component = EquipableComponent;
+    public readonly stats: Int32Array = new Int32Array(numEquipableStats);
 
     constructor(
         owner: Entity,

@@ -73,3 +73,13 @@ export function* zip<A, B>(iterableA: Iterable<A>, iterableB: Iterable<B>): Iter
 export function enumValues<T>(e: T): Array<T[keyof T]> {
     return Object.values(e).filter(v => !isNaN(v));
 }
+
+export function enumSize(e: Object): number {
+    let count = 0;
+    for (const key of Object.keys(e)) {
+        if (isNaN(Number(key))) {
+            count++;
+        }
+    }
+    return count;
+}

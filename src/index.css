@@ -20,7 +20,7 @@ canvas {
     font-size: 10px;
     position: absolute;
     text-transform: uppercase;
-    text-shadow: 0 0 1px white;
+    text-shadow: 0 0 1px currentColor;
 }
 
 .menu {
@@ -31,7 +31,7 @@ canvas {
     font-family: "puny";
     font-size: 10px;
     text-transform: uppercase;
-    text-shadow: 0 0 1px white;
+    text-shadow: 0 0 1px currentColor;
 }
 
 .menu-title {

@@ -1,4 +1,5 @@
 import { Entity } from "../entities/Entity";
+import { isDefined } from "../utils";
 import { Component, ComponentData } from "./Component";
 import { Equipable } from "./Equipable";
 
@@ -52,19 +53,34 @@ export const equipmentSlotNames = [
     "Amulet"
 ];
 
+type EquipableEntity = Entity & typeof Equipable.Component.prototype;
+
 export class Equipment extends ComponentData {
     public static readonly Component = EquipmentComponent;
-    public readonly slots: Map<EquipmentSlot, Entity & typeof Equipable.Component.prototype> = new Map();
+    public readonly defaults: Map<EquipmentSlot, EquipableEntity> = new Map();
+    public readonly slots: Map<EquipmentSlot, EquipableEntity> = new Map();
 
-    public equip(entity: Entity & typeof Equipable.Component.prototype) {
+    public get(slot: EquipmentSlot): EquipableEntity | null {
+        const item = this.slots.get(slot);
+        if (isDefined(item)) {
+            return item;
+        }
+        const dflt = this.defaults.get(slot);
+        if (isDefined(dflt)) {
+            return dflt;
+        }
+        return null;
+    }
+
+    public equip(entity: EquipableEntity) {
         this.slots.set(entity.equipable.slot, entity);
     }
 
-    public unequip(entity: Entity & typeof Equipable.Component.prototype) {
+    public unequip(entity: EquipableEntity) {
         this.slots.delete(entity.equipable.slot);
     }
 
-    public hasEquipped(entity: Entity & typeof Equipable.Component.prototype): boolean {
+    public hasEquipped(entity: EquipableEntity): boolean {
         return this.slots.get(entity.equipable.slot) === entity;
     }
 

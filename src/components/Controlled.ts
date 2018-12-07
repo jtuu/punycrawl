@@ -1,6 +1,7 @@
 import { ActionKind } from "../actions/Action";
 import { Controller, IController } from "../Controller";
 import { Entity } from "../entities/Entity";
+import { Attribute, Attributes } from "./Attributes";
 import { Component, ComponentData } from "./Component";
 
 class ControlledComponent extends Component {
@@ -38,8 +39,12 @@ export const baseEnergyCosts = {
     [ActionKind.Unequip]: 150
 };
 
-export function getActionCost(_actor: Entity, kind: ActionKind): number {
-    return baseEnergyCosts[kind];
+export function getActionCost(actor: Entity, kind: ActionKind): number {
+    let cost = baseEnergyCosts[kind];
+    if (actor.hasComponent(Attributes.Component)) {
+        cost -= actor.attributes.values[Attribute.Speed];
+    }
+    return Math.max(cost, 0);
 }
 
 export class Controlled extends ComponentData {
