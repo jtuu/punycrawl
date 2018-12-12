@@ -15,6 +15,7 @@ import { EventEmitter } from "./EventEmitter";
 import { Visibility } from "./fov";
 import { Id, sortById } from "./Id";
 import { MessageLog } from "./MessageLog";
+import { Random } from "./Random";
 import { SpriteManager } from "./SpriteManager";
 import { assertNotNull, isDefined, isNotNull } from "./utils";
 import { v } from "./vdom";
@@ -99,6 +100,7 @@ type GameEventTopicMap = {
 };
 
 export class Game extends EventEmitter<GameEventTopicMap> {
+    public readonly rng: Random;
     private static readonly defaultFloorWidth: number = 100;
     private static readonly defaultFloorHeight: number = 100;
     private readonly memoryCanvas: HTMLCanvasElement = v("canvas").appendTo(document.body);
@@ -115,8 +117,9 @@ export class Game extends EventEmitter<GameEventTopicMap> {
     private running: boolean = false;
     public readonly logger: MessageLog = new MessageLog(this, document.body, 6);
     
-    constructor() {
+    constructor(seed?: number) {
         super();
+        this.rng = new Random(seed);
         const mainCtx = this.mainCanvas.getContext("2d");
         if (mainCtx === null) {
             throw new Error("Failed to get CanvasRenderingContext2D");

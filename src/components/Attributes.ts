@@ -33,8 +33,8 @@ export enum Attribute {
     Endurance,
     Speed,
     // derived
-    AttackDice1,
-    AttackDice2,
+    AttackDiceNum,
+    AttackDiceSize,
     Accuracy,
     Defense,
     Evasion
@@ -71,8 +71,8 @@ export class Attributes extends ComponentData {
             total.values[Attribute.Evasion] += total.values[Attribute.Dexterity] / Math.max(encumbranceSum, 1);
             const weapon = this.owner.equipment.get(EquipmentSlot.MainHand);
             if (isNotNull(weapon)) {
-                total.values[Attribute.AttackDice1] += weapon.equipable.stats[EquipableStats.MeleeDice2];
-                total.values[Attribute.AttackDice2] += total.values[Attribute.Strength] + weapon.equipable.stats[EquipableStats.MeleeDice1];
+                total.values[Attribute.AttackDiceNum] += weapon.equipable.stats[EquipableStats.MeleeDiceSize];
+                total.values[Attribute.AttackDiceSize] += total.values[Attribute.Strength] + weapon.equipable.stats[EquipableStats.MeleeDiceNum];
                 total.values[Attribute.Accuracy] += total.values[Attribute.Dexterity] + weapon.equipable.stats[EquipableStats.MeleeAccuracy];
             }
         }

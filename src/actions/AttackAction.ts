@@ -27,13 +27,8 @@ export class AttackAction implements IAction {
         let acc = 1;
         let delay = 10;
         if (actor.hasComponent(Attributes.Component)) {
-            dmg = 0;
             const attrs = actor.attributes.getTotalAttributes().values;
-            const d1 = attrs[Attribute.AttackDice1];
-            const d2 = attrs[Attribute.AttackDice2];
-            for (let i = 0; i < d1; i++) {
-                dmg += Math.floor(Math.random() * d2 + 1);
-            }
+            dmg = game.rng.diceRoll(attrs[Attribute.AttackDiceNum], attrs[Attribute.AttackDiceSize]);
             acc = attrs[Attribute.Accuracy];
         }
         if (actor.hasComponent(Equipment.Component)) {
@@ -51,8 +46,7 @@ export class AttackAction implements IAction {
                     eva = attrs[Attribute.Evasion];
                     def = attrs[Attribute.Defense];
                 }
-                const hit = Math.random() * eva < acc;
-                if (hit) {
+                if (eva <= 0 || game.rng.random2(eva) < acc) {
                     dmg -= def;
                     if (dmg > 0) {
                         defender.damageable.takeDamage(dmg);

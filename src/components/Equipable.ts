@@ -26,8 +26,8 @@ class EquipableComponent extends Component {
 }
 
 export enum EquipableStats {
-    MeleeDice1,
-    MeleeDice2,
+    MeleeDiceNum,
+    MeleeDiceSize,
     MeleeAccuracy,
     MeleeDelay,
     ArmorRating,

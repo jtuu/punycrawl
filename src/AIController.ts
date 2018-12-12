@@ -93,7 +93,7 @@ export class AIController extends IController {
             // can sense target but can't find path
             // drunkWalk slowly
             let drunkDir: Vec2 | null;
-            if (++this.wanderCounter > 1 || (drunkDir = drunkWalk(level, x, y)) === null) {
+            if (++this.wanderCounter > 1 || (drunkDir = drunkWalk(this.game.rng, level, x, y)) === null) {
                 this.wanderCounter = 0;
                 return ActionFactory.createRestAction();
             } else {
@@ -110,8 +110,8 @@ export class AIController extends IController {
         let x;
         let y;
         do {
-            x = Math.floor(Math.random() * level.width);
-            y = Math.floor(Math.random() * level.height);
+            x = this.game.rng.random2(level.width);
+            y = this.game.rng.random2(level.height);
         } while (level.terrainAt(x, y).blocksMovement || level.entitiesAt(x, y).length > 0);
         return [x, y];
     }

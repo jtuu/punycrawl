@@ -4,6 +4,7 @@ import { cardinalDirections, manhattanDistance, ordinalDirections, principalDire
 import { Grid } from "./Grid";
 import { PriorityQueue } from "./PriorityQueue";
 import { Queue } from "./Queue";
+import { Random } from "./Random";
 import { assertDefined, assertNotNull } from "./utils";
 import { Vec2HashMap } from "./Vec2HashMap";
 
@@ -159,9 +160,9 @@ export function* blindPath(level: DungeonLevel, fromx: number, fromy: number, to
     } while (curx !== tox && cury !== toy);
 }
 
-export function drunkWalk(level: DungeonLevel, fromx: number, fromy: number): Vec2 | null {
+export function drunkWalk(rng: Random, level: DungeonLevel, fromx: number, fromy: number): Vec2 | null {
     const numDir = principalDirections.length;
-    const start = Math.floor(Math.random() * numDir);
+    const start = rng.random2(numDir);
     let i = start;
     while (true) {
         const dir = principalDirections[i];

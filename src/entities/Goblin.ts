@@ -15,8 +15,8 @@ class Fist extends Entity {
         super(game, "Fist");
         if (this.addComponent(new Equipable.Component(this, EquipmentSlot.MainHand))) {
             const {stats} = this.equipable;
-            stats[EquipableStats.MeleeDice1] = 1;
-            stats[EquipableStats.MeleeDice2] = 1;
+            stats[EquipableStats.MeleeDiceNum] = 1;
+            stats[EquipableStats.MeleeDiceSize] = 1;
             stats[EquipableStats.MeleeAccuracy] = 1;
             stats[EquipableStats.MeleeDelay] = 10;
         }
