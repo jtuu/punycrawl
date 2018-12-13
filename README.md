@@ -1,4 +1,7 @@
 # Punycrawl
+
+![](https://img.shields.io/badge/sasquatch-hiding-lightgrey.svg)
+
 Punycrawl is a roguelike based on Dungeon Crawl Stone Soup.
 
 ## License information
