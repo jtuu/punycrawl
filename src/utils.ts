@@ -23,10 +23,14 @@ export function assertNotNull<T>(thing: T | null): T {
     throw new Error("Assert failed: is null");
 }
 
+export function instanceOf<T extends Function>(thing: any, t: T): thing is T["prototype"] {
+    return thing instanceof t;
+}
+
 export function filterInstanceOf<T extends Function>(array: Array<any>, t: T): Array<T["prototype"]> {
     const result: Array<T> = [];
     for (const item of array) {
-        if (item instanceof t) {
+        if (instanceOf(item, t)) {
             result.push(item);
         }
     }
