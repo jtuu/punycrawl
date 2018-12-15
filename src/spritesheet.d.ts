@@ -7,6 +7,10 @@ declare type Spritesheet = {
   goblin: Sprite;
   trinket: Sprite;
   sasquatch: Sprite;
+  dirt: Sprite;
+  planks: Sprite;
+  grass: Sprite;
+  stonewall: Sprite;
 };
 
 declare type Sprite = {
