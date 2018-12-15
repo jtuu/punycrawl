@@ -11,6 +11,7 @@ declare type Spritesheet = {
   planks: Sprite;
   grass: Sprite;
   stonewall: Sprite;
+  palisade: Sprite;
 };
 
 declare type Sprite = {
