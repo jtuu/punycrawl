@@ -14,6 +14,8 @@ import { Trinket } from "./entities/Trinket";
 import { EventEmitter } from "./EventEmitter";
 import { Visibility } from "./fov";
 import { Id, sortById } from "./Id";
+import { MapGenerator } from "./mapgen/MapGenerator";
+import { villageMap } from "./mapgen/villageMap";
 import { MessageLog } from "./MessageLog";
 import { Random } from "./Random";
 import { SpriteManager } from "./SpriteManager";
@@ -154,6 +156,9 @@ export class Game extends EventEmitter<GameEventTopicMap> {
         }
 
         this.addEventListener(GameEventTopic.Death, this.onEntityDeath);
+        const mapgen = new MapGenerator(this, 30, 30, 100, 100);
+        villageMap(mapgen);
+        mapgen.draw();
     }
 
     public get trackedEntity(): Entity | null {
@@ -226,8 +231,11 @@ export class Game extends EventEmitter<GameEventTopicMap> {
                         const xpx = (x - offsetX) * TilePixelSize;
                         const ypx = (y - offsetY) * TilePixelSize;
                         const terrain = level.terrainAt(x, y);
-                        ctx.fillStyle = terrain.bgColor;
-                        ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
+                        const terrainColor = terrain.bgColor;
+                        if (isNotNull(terrainColor)) {
+                            ctx.fillStyle = terrainColor;
+                            ctx.fillRect(xpx, ypx, TilePixelSize, TilePixelSize);
+                        }
                         const terrainSprite = terrain.sprite;
                         if (isNotNull(terrainSprite)) {
                             this.sprites.draw(ctx, terrainSprite, xpx, ypx);

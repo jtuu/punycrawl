@@ -28,10 +28,15 @@ digital FOV with recursive shadowcasting algorithm.
 #include <string.h>
 
 // this needs to match the enum in ts
-typedef enum {
-    Wall,
+typedef enum TerrainKind {
+    StoneWall,
+    WoodWall,
+    Palisade,
     NUM_VISION_BLOCKING_TERRAIN,
-    Floor,
+    StoneFloor,
+    WoodFloor,
+    Grass,
+    Dirt,
     Upstairs,
     Downstairs
 } TerrainKind;

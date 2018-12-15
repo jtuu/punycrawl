@@ -25,16 +25,16 @@ export class DungeonLevel extends Grid {
             for (let y = 0; y < height; y++) {
                 const col = this.terrainMap.columns[x];
                 if (Math.random() < 0.05) {
-                    col[y] = TerrainKind.Wall;
+                    col[y] = TerrainKind.StoneWall;
                 } else {
-                    col[y] = TerrainKind.Floor;
+                    col[y] = TerrainKind.StoneFloor;
                 }
             }
         }
-        this.terrainMap.columns[1][1] = TerrainKind.Floor;
-        this.terrainMap.columns[7].fill(TerrainKind.Floor);
-        this.terrainMap.columns[8].fill(TerrainKind.Floor);
-        this.terrainMap.columns[9].fill(TerrainKind.Floor);
+        this.terrainMap.columns[1][1] = TerrainKind.StoneFloor;
+        this.terrainMap.columns[7].fill(TerrainKind.StoneFloor);
+        this.terrainMap.columns[8].fill(TerrainKind.StoneFloor);
+        this.terrainMap.columns[9].fill(TerrainKind.StoneFloor);
         this.terrainMap.columns[2][2] = TerrainKind.Downstairs;
         this.terrainMap.columns[3][2] = TerrainKind.Upstairs;
         this.entityMap = new Array(width * height);
